@@ -1,5 +1,28 @@
 {
+  "name": "ai-agent-for-healthcare",
+  "version": "1.0.0",
+  "description": "AI Agent for Healthcare – Node.js server for ChatGPT integration",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
-    "express": "^5.1.0"
-  }
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "mysql2": "^3.15.3",
+    "dotenv": "^16.0.3",
+    "openai": "^4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inaama8888/AI-agent-for-healthcare-.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/inaama8888/AI-agent-for-healthcare-/issues"
+  },
+  "homepage": "https://github.com/inaama8888/AI-agent-for-healthcare-#readme"
 }
