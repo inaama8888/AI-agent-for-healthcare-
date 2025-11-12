@@ -5,9 +5,9 @@ const app = express();
 // מגדיר את התיקייה Public כסטטית – כל קובץ בה יונגש למשתמש
 app.use(express.static(path.join(__dirname, 'Public')));
 
-// ראוט בסיסי – דף הבית (index.html)
+// אם דף הבית הוא Home.html (בתוך Public/html)
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'Public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'Public', 'html', 'Home.html'));
 });
 
 // דוגמה לנתיב API – תוכלי להרחיב אותו בעתיד
