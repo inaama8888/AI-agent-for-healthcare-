@@ -8,75 +8,146 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static("Public"));
 
-// חיבור ל-MySQL
+// ---------------------------
+// חיבור למסד נתונים
+// ---------------------------
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "1234",      // ← לשנות אם בחרת סיסמה אחרת
+  password: "1234",
   database: "ai_agent"
 });
 
-// בדיקה שהתחבר
 db.connect(err => {
   if (err) {
-    console.error("MySQL ERROR:", err);
+    console.error("❌ MySQL ERROR:", err);
     return;
   }
   console.log("✅ MySQL Connected!");
 });
 
-// ---------------- API ----------------
-//// בדיקת התחברות
-const handleName = async () => {
-  const name = input.trim();
-  if (!name) {
-    sendBot("אנא הזן שם חוקי.");
-    return;
-  }
+// ---------------------------
+// 1. בדיקת משתמש קיים
+// ---------------------------
+app.post("/api/check-user", (req, res) => {
+  const { name } = req.body;
+  const sql = "SELECT * FROM Users WHERE full_name = ? LIMIT 1";
 
-  try {
-    const res = await axios.get(
-      `http://localhost:5000/api/user?name=${encodeURIComponent(name)}`
-    );
+  db.query(sql, [name], (err, result) => {
+    if (err) return res.json({ error: err });
 
-    if (res.data.exists) {
-      // ✨ לקחת את השם האמיתי מהשרת — זה הקריטי!!!
-      const realName = res.data.user.full_name;
-
-      setUserName(realName);
-      sendBot(`התחברת בהצלחה, ${realName}!`);
-      setTimeout(() => showMenu(), 300);
-      setStep("menu");
-    } else {
-      sendBot("השם לא נמצא במערכת. נסה להקליד שם אחר.");
+    if (result.length > 0) {
+      return res.json({ exists: true, user: result[0] });
     }
-  } catch (err) {
-    console.error(err);
-    sendBot("שגיאה בשרת — נסה שנית מאוחר יותר.");
-  }
-};
 
+    res.json({ exists: false });
+  });
+});
 
-// שליפת שיעורים
+// ---------------------------
+// 2. שליפת כל השיעורים
+// ---------------------------
 app.get("/api/lessons", (req, res) => {
   const sql = `
-      SELECT 
-        lesson_id,
-        topic AS title,
-        instructor,
-        date,
-        seats
-      FROM Lessons
+    SELECT 
+      lesson_id,
+      topic AS title,
+      instructor,
+      date,
+      seats,
+      city,
+      location
+    FROM Lessons
   `;
 
   db.query(sql, (err, result) => {
     if (err) return res.status(500).json({ error: err });
-
     res.json({ lessons: result });
   });
 });
 
-// הרשמה לשיעור
+// ---------------------------
+// 3. חיפוש שיעורים לפי עיר
+// ---------------------------
+app.get("/api/lessons/by-city", (req, res) => {
+  const { city } = req.query;
+  if (!city) return res.json({ lessons: [] });
+
+  const sql = `
+    SELECT
+      lesson_id,
+      topic AS title,
+      instructor,
+      date,
+      seats,
+      city,
+      location
+    FROM Lessons
+    WHERE city LIKE ?
+  `;
+
+  db.query(sql, [`%${city}%`], (err, result) => {
+    if (err) return res.status(500).json({ error: err });
+    res.json({ lessons: result });
+  });
+});
+
+// ---------------------------
+// 4. חיפוש שיעורים לפי נושא
+// ---------------------------
+app.get("/api/lessons/by-topic", (req, res) => {
+  const { topic } = req.query;
+  if (!topic) return res.json({ lessons: [] });
+
+  const sql = `
+    SELECT
+      lesson_id,
+      topic AS title,
+      instructor,
+      date,
+      seats,
+      city,
+      location
+    FROM Lessons
+    WHERE topic LIKE ?
+  `;
+
+  db.query(sql, [`%${topic}%`], (err, result) => {
+    if (err) return res.status(500).json({ error: err });
+    res.json({ lessons: result });
+  });
+});
+
+// ---------------------------
+// 5. חיפוש שיעורים לפי תאריך
+//    מצפים לפורמט YYYY-MM-DD
+// ---------------------------
+app.get("/api/lessons/by-date", (req, res) => {
+  const { date } = req.query; // למשל 2025-05-15
+  if (!date) return res.json({ lessons: [] });
+
+  const sql = `
+    SELECT
+      lesson_id,
+      topic AS title,
+      instructor,
+      date,
+      seats,
+      city,
+      location
+    FROM Lessons
+    WHERE DATE(date) = ?
+  `;
+
+  db.query(sql, [date], (err, result) => {
+    if (err) return res.status(500).json({ error: err });
+    res.json({ lessons: result });
+  });
+});
+
+// ---------------------------
+// 6. הרשמה לשיעור עם בדיקת קיבולת
+// ---------------------------
 app.post("/api/register", (req, res) => {
   const { name, lesson_id } = req.body;
 
@@ -84,7 +155,6 @@ app.post("/api/register", (req, res) => {
     return res.json({ status: "ERROR", message: "Missing fields" });
   }
 
-  // 1️⃣ מציאת user_id לפי השם
   const findUserSql = "SELECT user_id FROM Users WHERE full_name = ? LIMIT 1";
 
   db.query(findUserSql, [name], (err, userResult) => {
@@ -94,7 +164,6 @@ app.post("/api/register", (req, res) => {
 
     const user_id = userResult[0].user_id;
 
-    // 2️⃣ בדיקת כמות רשומים וקיבולת
     const checkSql = `
       SELECT 
         L.seats AS max_seats,
@@ -112,12 +181,10 @@ app.post("/api/register", (req, res) => {
 
       const { max_seats, registered } = countResult[0];
 
-      // 3️⃣ בדיקה: מלא?
       if (registered >= max_seats) {
-        return res.json({ status: "FULL", message: "השיעור מלא ❌" });
+        return res.json({ status: "FULL", message: "השיעור מלא" });
       }
 
-      // 4️⃣ הוספה – יש מקום!
       const insertSql = `
         INSERT INTO User_Lessons (user_id, lesson_id)
         VALUES (?, ?)
@@ -132,8 +199,9 @@ app.post("/api/register", (req, res) => {
   });
 });
 
-
-// יצירת משתמש (אופציונלי בכפתור "Start")
+// ---------------------------
+// 7. הוספת משתמש חדש (אם תרצי להשתמש בעתיד)
+// ---------------------------
 app.post("/api/user", (req, res) => {
   const { full_name } = req.body;
 
@@ -147,6 +215,10 @@ app.post("/api/user", (req, res) => {
   );
 });
 
-// הפעלת שרת
+// ---------------------------
+// הפעלת השרת
+// ---------------------------
 const PORT = 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);
