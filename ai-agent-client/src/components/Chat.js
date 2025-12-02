@@ -9,25 +9,20 @@ function Chat() {
   const [userName, setUserName] = useState("");
   const [lessons, setLessons] = useState([]);
 
-  // -------------------------
-  // עזר להודעות
-  // -------------------------
-  const sendBot = (text) =>
+  const sendBot = (text) => {
     setMessages((prev) => [...prev, { sender: "bot", text }]);
+  };
 
-  const sendUser = (text) =>
+  const sendUser = (text) => {
     setMessages((prev) => [...prev, { sender: "user", text }]);
+  };
 
-  // -------------------------
-  // עזר לפורמט תאריך
-  // -------------------------
   const formatDateTime = (raw) => {
     if (!raw) return "";
     const d = new Date(raw);
-    // מציג יפה למשתמש: תאריך + שעה
     return d.toLocaleString("he-IL", {
       dateStyle: "short",
-      timeStyle: "short"
+      timeStyle: "short",
     });
   };
 
@@ -42,16 +37,10 @@ function Chat() {
     ].join("\n");
   };
 
-  // -------------------------
-  // פתיחה
-  // -------------------------
   useEffect(() => {
     sendBot("שלום וברכה! מה שמך?");
   }, []);
 
-  // -------------------------
-  // 1. בדיקת שם
-  // -------------------------
   const handleName = async () => {
     const name = input.trim();
     if (!name) {
@@ -61,7 +50,7 @@ function Chat() {
 
     try {
       const res = await axios.post("http://localhost:5000/api/check-user", {
-        name
+        name,
       });
 
       if (!res.data.exists) {
@@ -74,23 +63,15 @@ function Chat() {
 
       setTimeout(showMainMenu, 300);
       setStep("main_menu");
-
     } catch {
       sendBot("שגיאה בשרת.");
     }
   };
 
-  // -------------------------
-  // 2. תפריט ראשי
-  // -------------------------
   const showMainMenu = () => {
     sendBot("בחרי פעולה:");
     sendBot(
-      [
-        "1 - הרשמה לשיעור",
-        "2 - שאלות ותשובות על שיעורים",
-        "3 - תמיכה רגשית"
-      ].join("\n")
+      ["1 - הרשמה לשיעור", "2 - שאלות ותשובות על שיעורים", "3 - תמיכה רגשית"].join("\n")
     );
   };
 
@@ -102,55 +83,69 @@ function Chat() {
           "1 - כל השיעורים",
           "2 - לפי עיר",
           "3 - לפי נושא",
-          "4 - לפי תאריך",
           "0 - חזרה",
-          "9 - תפריט ראשי"
+          "9 - תפריט ראשי",
         ].join("\n")
       );
       setStep("choose_search_method");
-
     } else if (input === "2") {
       sendBot("מוזמנת לשאול כל שאלה על שיעורים.");
-
     } else if (input === "3") {
-      sendBot("אני כאן. מה את מרגישה?");
-
+      sendBot("אני כאן איתך ❤️ מה את מרגישה עכשיו?");
+      setStep("emotional_feeling");
     } else {
       sendBot("בחירה לא תקינה.");
     }
   };
 
-  // -------------------------
-  // 3. תת תפריט חיפוש
-  // -------------------------
+  const handleEmotionalFeeling = async () => {
+    const feeling = input.trim();
+    if (!feeling) {
+      sendBot("נא לכתוב מה את מרגישה ❤️");
+      return;
+    }
+
+    sendBot("יוצרת עבורך תרגול נשימה והתבוננות...");
+
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/emotional-support",
+        {
+          feeling,
+          userName,
+        }
+      );
+
+      const exercise = res.data.mindfulness_exercise;
+
+      sendBot(`🧘‍♀️ *${exercise.title}*`);
+      exercise.steps.forEach((s, i) => {
+        sendBot(`שלב ${i + 1}: ${s}`);
+      });
+
+      sendBot("רוצה תרגול נוסף? כתבי שוב רגש ❤️");
+    } catch {
+      sendBot("שגיאה בקבלת תרגול רגשתי.");
+    }
+  };
+
   const handleSearchMenu = () => {
     if (input === "1") {
       loadAllLessons();
-
     } else if (input === "2") {
       sendBot("הקלידי שם עיר (או 'זום'):");
       setStep("search_city");
-
     } else if (input === "3") {
-      sendBot("הקלידי נושא שיעור (לדוגמה: איזון רגשי):");
+      sendBot("הקלידי נושא שיעור:");
       setStep("search_topic");
-
-    } else if (input === "4") {
-      sendBot("הקלידי תאריך בפורמט YYYY-MM-DD (לדוגמה: 2025-05-15):");
-      setStep("search_date");
-
     } else if (input === "0" || input === "9") {
       showMainMenu();
       setStep("main_menu");
-
     } else {
       sendBot("בחירה לא תקינה.");
     }
   };
 
-  // -------------------------
-  // 4. כל השיעורים
-  // -------------------------
   const loadAllLessons = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/lessons");
@@ -163,21 +158,15 @@ function Chat() {
       setLessons(res.data.lessons);
 
       sendBot("רשימת השיעורים:");
-      res.data.lessons.forEach((l, i) =>
-        sendBot(formatLessonDetails(l, i))
-      );
+      res.data.lessons.forEach((l, i) => sendBot(formatLessonDetails(l, i)));
 
-      sendBot("הקלידי מספר שיעור לבחירה:");
+      sendBot("הקלידי מספר שיעור:");
       setStep("register");
-
     } catch {
       sendBot("שגיאה בטעינת שיעורים.");
     }
   };
 
-  // -------------------------
-  // 5. חיפוש לפי עיר
-  // -------------------------
   const searchByCity = async () => {
     const city = input.trim();
     if (!city) {
@@ -187,8 +176,11 @@ function Chat() {
 
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/lessons/by-city?city=${encodeURIComponent(city)}`
+        `http://localhost:5000/api/lessons/by-city?city=${encodeURIComponent(
+          city
+        )}`
       );
+
       const list = res.data.lessons;
 
       if (!list.length) {
@@ -198,21 +190,16 @@ function Chat() {
       }
 
       setLessons(list);
-
       sendBot(`נמצאו ${list.length} שיעורים בעיר: ${city}`);
       list.forEach((l, i) => sendBot(formatLessonDetails(l, i)));
 
-      sendBot("הקלידי מספר שיעור לבחירה:");
+      sendBot("הקלידי מספר שיעור:");
       setStep("register");
-
     } catch {
       sendBot("שגיאה בחיפוש לפי עיר.");
     }
   };
 
-  // -------------------------
-  // 6. חיפוש לפי נושא
-  // -------------------------
   const searchByTopic = async () => {
     const topic = input.trim();
     if (!topic) {
@@ -222,8 +209,11 @@ function Chat() {
 
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/lessons/by-topic?topic=${encodeURIComponent(topic)}`
+        `http://localhost:5000/api/lessons/by-topic?topic=${encodeURIComponent(
+          topic
+        )}`
       );
+
       const list = res.data.lessons;
 
       if (!list.length) {
@@ -233,61 +223,21 @@ function Chat() {
       }
 
       setLessons(list);
-
       sendBot(`נמצאו ${list.length} שיעורים בנושא: ${topic}`);
       list.forEach((l, i) => sendBot(formatLessonDetails(l, i)));
 
-      sendBot("הקלידי מספר שיעור לבחירה:");
+      sendBot("הקלידי מספר שיעור:");
       setStep("register");
-
     } catch {
       sendBot("שגיאה בחיפוש לפי נושא.");
     }
   };
 
-  // -------------------------
-  // 7. חיפוש לפי תאריך
-  // -------------------------
-  const searchByDate = async () => {
-    const date = input.trim(); // מצופה YYYY-MM-DD
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      sendBot("פורמט תאריך לא תקין. דוגמה: 2025-05-15");
-      return;
-    }
-
-    try {
-      const res = await axios.get(
-        `http://localhost:5000/api/lessons/by-date?date=${encodeURIComponent(date)}`
-      );
-      const list = res.data.lessons;
-
-      if (!list.length) {
-        sendBot("לא נמצאו שיעורים בתאריך זה.");
-        setStep("choose_search_method");
-        return;
-      }
-
-      setLessons(list);
-
-      sendBot(`נמצאו ${list.length} שיעורים בתאריך: ${date}`);
-      list.forEach((l, i) => sendBot(formatLessonDetails(l, i)));
-
-      sendBot("הקלידי מספר שיעור לבחירה:");
-      setStep("register");
-
-    } catch {
-      sendBot("שגיאה בחיפוש לפי תאריך.");
-    }
-  };
-
-  // -------------------------
-  // 8. הרשמה לשיעור
-  // -------------------------
   const handleRegister = async () => {
     const index = parseInt(input) - 1;
 
     if (isNaN(index) || index < 0 || index >= lessons.length) {
-      sendBot("מספר שיעור לא תקין.");
+      sendBot("מספר לא תקין.");
       return;
     }
 
@@ -296,7 +246,7 @@ function Chat() {
     try {
       const res = await axios.post("http://localhost:5000/api/register", {
         name: userName,
-        lesson_id: lesson.lesson_id
+        lesson_id: lesson.lesson_id,
       });
 
       if (res.data.status === "FULL") {
@@ -306,27 +256,17 @@ function Chat() {
 
       sendBot(`נרשמת לשיעור: ${lesson.title}`);
 
-      sendBot(
-        [
-          "1 - חזרה לתפריט הראשי",
-          "2 - חזרה לחיפוש שיעור"
-        ].join("\n")
-      );
+      sendBot(["1 - חזרה לתפריט", "2 - חיפוש נוסף"].join("\n"));
       setStep("after_register_menu");
-
     } catch {
       sendBot("שגיאה בהרשמה.");
     }
   };
 
-  // -------------------------
-  // 9. תפריט אחרי הרשמה
-  // -------------------------
   const handleAfterRegisterMenu = () => {
     if (input === "1") {
       showMainMenu();
       setStep("main_menu");
-
     } else if (input === "2") {
       sendBot("כיצד תרצי לחפש שיעור?");
       sendBot(
@@ -334,35 +274,27 @@ function Chat() {
           "1 - כל השיעורים",
           "2 - לפי עיר",
           "3 - לפי נושא",
-          "4 - לפי תאריך",
           "0 - חזרה",
-          "9 - תפריט ראשי"
+          "9 - תפריט ראשי",
         ].join("\n")
       );
       setStep("choose_search_method");
-
     } else {
       sendBot("נא לבחור 1 או 2.");
     }
   };
 
-  // -------------------------
-  // מיפוי שלבים
-  // -------------------------
   const handlers = {
     greet: handleName,
     main_menu: handleMainMenu,
     choose_search_method: handleSearchMenu,
     search_city: searchByCity,
     search_topic: searchByTopic,
-    search_date: searchByDate,
     register: handleRegister,
-    after_register_menu: handleAfterRegisterMenu
+    after_register_menu: handleAfterRegisterMenu,
+    emotional_feeling: handleEmotionalFeeling,
   };
 
-  // -------------------------
-  // שליחת הודעה
-  // -------------------------
   const handleSend = () => {
     if (!input.trim()) return;
     sendUser(input);

@@ -1,4 +1,8 @@
+
 const express = require("express");
+require("dotenv").config();
+console.log("🔑 OpenAI KEY loaded:", !!process.env.OPENAI_API_KEY);
+
 const cors = require("cors");
 const mysql = require("mysql2");
 
@@ -218,6 +222,11 @@ app.post("/api/user", (req, res) => {
 // ---------------------------
 // הפעלת השרת
 // ---------------------------
+
+// ⬇️ כאן חיבור ה־API החדש
+const emotionalSupportRoute = require("./routes/emotionalSupportRoute");
+app.use("/api/emotional-support", emotionalSupportRoute);
+
 const PORT = 5000;
 app.listen(PORT, () =>
   console.log(`🚀 Server running on http://localhost:${PORT}`)

@@ -1,3 +1,9 @@
+body, .chat-container, .messages {
+  direction: rtl;
+  text-align: right;
+}
+
+
 /* ---------- HEADER ---------- */
 .header {
   text-align: center;
