@@ -36,3 +36,25 @@
     transform: rotate(360deg);
   }
 }
+/* Shell שמחזיק את שני המסכים באותו מקום בלי קפיצות */
+.screen-shell {
+  position: relative;
+  width: 100%;
+  height: 100vh;       /* חשוב: גובה קבוע, בלי שינוי layout */
+  overflow: hidden;    /* מונע קפיצות */
+}
+
+/* שתי שכבות מוערמות */
+.screen-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+/* המסך הפעיל */
+.screen-layer.active {
+  opacity: 1;
+  pointer-events: auto;
+}

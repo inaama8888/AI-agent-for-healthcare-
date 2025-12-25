@@ -1,0 +1,382 @@
+/* =========================================================
+   Chat UI – "מרחב לחוסן ותמיכה"
+   Header wrapped + bubbles pinned to edges + fixed input bar
+   ========================================================= */
+
+:root{
+  --bg-0:#f6f9ff;
+  --bg-1:#eef5ff;
+
+  --text:#0f172a;
+  --muted:#64748b;
+
+  --bubble-user:#ffffff;
+  --bubble-bot:#dbeafe;
+
+  --border:rgba(15,23,42,.08);
+
+  --accent:#2563eb;
+  --accent-soft:#38bdf8;
+
+  --radius-xl:22px;
+
+  --shadow-sm:0 6px 18px rgba(15,23,42,.08);
+  --shadow-md:0 14px 40px rgba(15,23,42,.10);
+
+  --ring:0 0 0 3px rgba(37,99,235,.18);
+}
+
+/* =========================
+   Base
+   ========================= */
+*{ box-sizing:border-box; }
+
+html,body{
+  height:100%;
+  margin:0;
+  direction:rtl;
+  font-family:system-ui,-apple-system,"Segoe UI",Arial,"Noto Sans Hebrew",sans-serif;
+  background:linear-gradient(180deg,var(--bg-0),var(--bg-1));
+  color:var(--text);
+}
+
+/* =========================
+   Chat container
+   ========================= */
+.chat-container{
+  width:100%;
+  min-height:100vh;
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+  background:transparent;
+}
+
+/* =========================
+   Header – wrapped properly
+   ========================= */
+.chat-container::before{
+content:
+    "סוכן AI לבריאות, תמיכה וחוסן \A"
+    "עצירה קטנה. נשימה. תרגול.";
+
+ 
+
+  white-space:pre-line;
+  text-align:center;
+
+  padding:18px 16px 14px;
+  font-size:18px;
+  font-weight:700;
+  line-height:1.4;
+
+  background:
+    linear-gradient(90deg,rgba(56,189,248,.18),rgba(37,99,235,.10)),
+    linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.85));
+
+  border-bottom:1px solid var(--border);
+  box-shadow:0 4px 12px rgba(15,23,42,.06);
+}
+
+/* =========================
+   Messages – full width bg
+   ========================= */
+.messages{
+  flex:1;
+  width:100%;
+  padding:18px 0;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+
+  background:
+    radial-gradient(320px 200px at 15% 20%,rgba(56,189,248,.14),transparent 60%),
+    radial-gradient(320px 200px at 85% 30%,rgba(37,99,235,.10),transparent 65%),
+    linear-gradient(180deg,#f8fbff,#eef5ff);
+}
+
+/* scrollbar */
+.messages::-webkit-scrollbar{ width:10px; }
+.messages::-webkit-scrollbar-thumb{
+  background:rgba(15,23,42,.18);
+  border-radius:999px;
+}
+
+/* =========================
+   Bubbles – shared
+   ========================= */
+.user,.bot{
+  max-width:85%;
+  padding:10px 12px;
+  border-radius:var(--radius-xl);
+  box-shadow:var(--shadow-sm);
+  border:1px solid var(--border);
+  font-size:15.5px;
+  line-height:1.4;
+  white-space:pre-line;
+  position:relative;
+}
+
+/* timestamp */
+.user::after,.bot::after{
+  content:"כעת";
+  display:block;
+  margin-top:6px;
+  font-size:11px;
+  color:var(--muted);
+}
+
+/* USER – שמאל, צמוד למסך */
+.user{
+  align-self:flex-start;
+  margin-inline-start:12px;
+  background:var(--bubble-user);
+  border-top-left-radius:10px;
+  padding-inline-start:44px;
+}
+.user::before{
+  
+  position:absolute;
+  inset-inline-start:12px;
+  top:10px;
+  width:26px;
+  height:26px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:#f1f5f9;
+  border:1px solid var(--border);
+  font-size:14px;
+}
+/* =========================
+   BOT – bubble + external icon
+   ========================= */
+.bot{
+  align-self: flex-end;
+  margin-inline-end: 48px;   /* מקום לאייקון מחוץ לבועה */
+  background: var(--bubble-bot);
+  border-top-right-radius: 10px;
+  position: relative;
+}
+
+/* =========================
+   BOT – bubble + icon OUTSIDE (left side)
+   ========================= */
+/* BOT – meditation icon, static, beside bubble */
+/* BOT message */
+/* BOT message */
+
+.bot{
+  position: relative;
+  margin-inline-end: 36px; /* מקום לאייקון מימין */
+}
+
+.bot::before{
+  content: "🧘";
+  position: absolute;
+  inset-inline-end: -28px; /* מחוץ לבועה – ימין */
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  line-height: 1;
+}
+
+/*
+
+
+
+
+
+
+
+
+
+
+
+/* 1mm up/down floating */
+@keyframes botFloat{
+  0%,100% { transform: translateY(calc(-50% - 1mm)); }
+  50%     { transform: translateY(calc(-50% + 1mm)); }
+}
+
+/* soft breathing glow */
+@keyframes botGlow{
+  0%{
+    box-shadow:
+      0 0 0 0 rgba(56,189,248,.35),
+      0 8px 20px rgba(37,99,235,.20);
+  }
+  50%{
+    box-shadow:
+      0 0 0 6px rgba(56,189,248,.18),
+      0 12px 28px rgba(37,99,235,.28);
+  }
+  100%{
+    box-shadow:
+      0 0 0 0 rgba(56,189,248,.35),
+      0 8px 20px rgba(37,99,235,.20);
+  }
+}
+
+/* Accessibility – respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .bot::before{
+    animation: none;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+/* =========================
+   INPUT BAR – restored & modern
+   ========================= */
+.input-box{
+  width:100%;
+  padding:12px 12px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+
+  background:rgba(255,255,255,.92);
+  border-top:1px solid var(--border);
+  box-shadow:0 -10px 26px rgba(15,23,42,.06);
+}
+
+/* typing bubble */
+.input-box input{
+  flex:1;
+  height:48px;
+  border-radius:999px;
+  border:1px solid rgba(15,23,42,.12);
+  background:rgba(248,250,252,.95);
+  padding:0 16px;
+  font-size:15px;
+  color:var(--text);
+  outline:none;
+  transition:border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+.input-box input::placeholder{
+  color:rgba(100,116,139,.85);
+}
+
+.input-box input:focus-visible{
+  border-color:rgba(37,99,235,.45);
+  box-shadow:var(--ring);
+  background:#fff;
+}
+/* send button – FIX ICON CENTERING */
+.input-box button{
+  width:48px;
+  height:48px;
+  border-radius:999px;
+  border:1px solid rgba(37,99,235,.22);
+  background:linear-gradient(135deg,var(--accent),var(--accent-soft));
+  color:#fff;
+  cursor:pointer;
+  box-shadow:0 10px 24px rgba(37,99,235,.22);
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:0; /* hides text */
+}
+
+/* perfectly centered icon */
+.input-box button::before{
+  content:"➤";
+  font-size:16px;
+  line-height:1;
+  transform:none;
+  display:block;
+}
+
+
+
+.input-box button:hover{
+  filter:brightness(1.03);
+  transform:translateY(-1px);
+  box-shadow:0 14px 30px rgba(37,99,235,.28);
+}
+
+.input-box button:active{
+  transform:translateY(0) scale(.98);
+}
+
+.input-box button:focus-visible{
+  outline:none;
+  box-shadow:var(--ring), 0 14px 30px rgba(37,99,235,.28);
+}
+
+/* =========================
+   Mobile
+   ========================= */
+
+/* =========================
+   Mobile adjustments
+   ========================= */
+@media (max-width: 600px){
+
+  /* מצמצמים רווח כדי לא לחרוג מרוחב המסך */
+  .bot{
+    margin-inline-end: 24px;
+  }
+
+  .bot::before{
+    inset-inline-end: -20px; /* מתקרב לבועה */
+    font-size: 16px;         /* אייקון קטן יותר */
+  }
+}
+
+/* =========================
+   Extra safety – no horizontal scroll
+   ========================= */
+html, body, .chat-container, .messages{
+  overflow-x: hidden;
+}
+
+
+
+.chat-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f7fb;
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.input-box {
+  display: flex;
+  padding: 12px;
+  border-top: 1px solid #ddd;
+  background: white;
+}
+
+
+.screen {
+  position: absolute;
+  inset: 0;
+}
+
+.screen.hide {
+  display: none;
+}
+
+.screen.show {
+  display: block;
+}
