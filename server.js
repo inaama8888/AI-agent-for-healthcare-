@@ -153,7 +153,38 @@ app.post("/api/check-user", (req, res) => {
     });
   });
 });
+  ///vranv
+  /* ================================
+   הרשמה לשיעור  ✅ (שלב 1)
+================================ */
+app.post("/api/register", (req, res) => {
+  const { name, lesson_id } = req.body;
 
+  if (!name || !lesson_id) {
+    return res.status(400).json({ error: "Missing data" });
+  }
+
+  // ⚠️ זה השם שהיה לך בישן – אם שונה, תגידי
+  const sql = `
+    INSERT INTO user_lessons (user_name, lesson_id)
+    VALUES (?, ?)
+  `;
+
+  db.query(sql, [name, lesson_id], (err) => {
+    if (err) {
+      console.error("❌ REGISTRATION ERROR:", err);
+
+      // טיפול במקרה של הרשמה כפולה / מלא
+      if (err.code === "ER_DUP_ENTRY") {
+        return res.json({ status: "FULL" });
+      }
+
+      return res.status(500).json({ error: "Registration failed" });
+    }
+
+    res.json({ status: "OK" });
+  });
+});
 /* ================================
    שליפת שיעורים
 ================================ */
