@@ -123,14 +123,11 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
-app.use(express.static("Public"));
+//app.use(express.static("Public"));
 
 /* ================================
    HEALTH CHECK (חשוב ל-Railway)
 ================================ */
-app.get("/", (req, res) => {
-  res.status(200).send("✅ Server is running");
-});
 
 /* ================================
    בדיקת משתמש קיים
@@ -181,6 +178,15 @@ app.get("/api/lessons", (req, res) => {
 ================================ */
 app.use("/api/faq", require("./routes/faqRoute"));
 app.use("/api/emotional-support", require("./routes/emotionalSupportRoute"));
+const path = require("path");
+
+app.use(express.static(path.join(__dirname, "client", "build")));
+
+app.get("*", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "client", "build", "index.html")
+  );
+});
 
 /* ================================
    START SERVER
