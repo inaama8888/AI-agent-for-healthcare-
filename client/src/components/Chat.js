@@ -17,7 +17,6 @@ function Chat() {
     setLessons,
   } = useContext(ChatContext);
 
-  // 🔹 FAQ state (מקומי, פשוט)
   const [faqMode, setFaqMode] = useState("choose");
   const [faqType, setFaqType] = useState(null);
   const [faqSelectedLesson, setFaqSelectedLesson] = useState(null);
@@ -28,19 +27,19 @@ function Chat() {
   const sendUser = (text) =>
     setMainMessages((prev) => [...prev, { sender: "user", text }]);
 
+  /* ---------- פתיחה ---------- */
   useEffect(() => {
     if (mainMessages.length === 0) {
-      sendBot("שלום וברכה! מה שמך?");
+      sendBot("שלום וברוכה הבאה 🌸 מה שמך?");
       setStep("greet");
     }
     // eslint-disable-next-line
   }, []);
 
-  /* ---------- תפריט ראשי ---------- */
   const showMainMenu = () => {
     sendBot("בחרי פעולה:");
     sendBot(
-      ["1 - הרשמה לשיעור", "2 - שאלות ותשובות", "3 - תמיכה רגשית"].join("\n")
+      ["1️⃣ הרשמה לשיעור", "2️⃣ שאלות ותשובות", "3️⃣ תמיכה רגשית"].join("\n")
     );
     setStep("main_menu");
   };
@@ -51,17 +50,18 @@ function Chat() {
     if (!name) return sendBot("נא להזין שם.");
 
     try {
-      const res = await axios.post("http://localhost:5000/api/check-user", { name });
+      const res = await axios.post("/api/check-user", { name });
+
       if (!res.data.exists) {
         sendBot("השם לא נמצא במערכת. נסי שוב:");
         return;
       }
 
       setUserName(name);
-      sendBot(`נעים מאוד ${name}.`);
+      sendBot(`נעים מאוד ${name} 💙`);
       showMainMenu();
-    } catch {
-      sendBot("שגיאה בשרת.");
+    } catch (err) {
+      sendBot("שגיאה בחיבור לשרת.");
     }
   };
 
@@ -86,12 +86,14 @@ function Chat() {
     if (faqMode === "choose") {
       if (text === "1") {
         setFaqType("LESSONS");
-        const res = await axios.get("http://localhost:5000/api/lessons");
+        const res = await axios.get("/api/lessons");
         setLessons(res.data.lessons);
+
         sendBot("בחרי שיעור:");
         res.data.lessons.forEach((l, i) =>
           sendBot(`${i + 1}. ${l.title}`)
         );
+
         setFaqMode("chooseLesson");
         return;
       }
@@ -126,7 +128,7 @@ function Chat() {
     }
 
     if (faqMode === "ask") {
-      const res = await axios.post("http://localhost:5000/api/faq", {
+      const res = await axios.post("/api/faq", {
         type: faqType,
         question: text,
         lesson: faqSelectedLesson,
@@ -139,43 +141,45 @@ function Chat() {
     }
 
     if (faqMode === "after") {
-      if (text === "1") {
-        setFaqMode("ask");
-      } else if (text === "2") {
-        startFAQ();
-      } else if (text === "0") {
-        showMainMenu();
-      } else {
-        sendBot("נא לבחור 1, 2 או 0");
-      }
+      if (text === "1") setFaqMode("ask");
+      else if (text === "2") startFAQ();
+      else if (text === "0") showMainMenu();
+      else sendBot("נא לבחור 1, 2 או 0");
     }
   };
 
-  /* ---------- handlers ---------- */
+  /* ---------- תמיכה רגשית ---------- */
+  const handleEmotionalSupport = async () => {
+    const feeling = mainInput.trim();
+    if (!feeling) return sendBot("מה את מרגישה?");
+
+    sendBot("יוצרת עבורך תרגול מתאים 🧘‍♀️");
+
+    const res = await axios.post("/api/emotional-support", {
+      feeling,
+      userName,
+    });
+
+    const ex = res.data.mindfulness_exercise;
+    sendBot(`🧘‍♀️ ${ex.title}`);
+    ex.steps.forEach((s, i) => sendBot(`שלב ${i + 1}: ${s}`));
+    showMainMenu();
+  };
+
+  /* ---------- ניתוב ---------- */
   const handlers = {
     greet: handleName,
     main_menu: () => {
       const choice = mainInput.trim();
-      if (choice === "1") sendBot("הרשמה – ממשיך כרגיל (הקוד שלך נשאר)");
+      if (choice === "1") sendBot("הרשמה לשיעור – ממשיך כאן 📝");
       else if (choice === "2") startFAQ();
       else if (choice === "3") {
         sendBot("מה את מרגישה עכשיו?");
-        setStep("emotional_feeling");
+        setStep("emotional");
       } else sendBot("בחירה לא תקינה.");
     },
     faq: handleFAQ,
-    emotional_feeling: async () => {
-      const feeling = mainInput.trim();
-      sendBot("יוצרת עבורך תרגול...");
-      const res = await axios.post("http://localhost:5000/api/emotional-support", {
-        feeling,
-        userName,
-      });
-      const ex = res.data.mindfulness_exercise;
-      sendBot(`🧘‍♀️ ${ex.title}`);
-      ex.steps.forEach((s, i) => sendBot(`שלב ${i + 1}: ${s}`));
-      showMainMenu();
-    },
+    emotional: handleEmotionalSupport,
   };
 
   const handleSend = () => {
@@ -189,7 +193,9 @@ function Chat() {
     <div className="chat-container">
       <div className="messages">
         {mainMessages.map((m, i) => (
-          <div key={i} className={m.sender}>{m.text}</div>
+          <div key={i} className={m.sender}>
+            {m.text}
+          </div>
         ))}
       </div>
 
@@ -198,6 +204,7 @@ function Chat() {
           value={mainInput}
           onChange={(e) => setMainInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
+          placeholder="הקלידי כאן..."
         />
         <button onClick={handleSend}>שליחה</button>
       </div>
