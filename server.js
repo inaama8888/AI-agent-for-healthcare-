@@ -166,7 +166,7 @@ app.post("/api/register", (req, res) => {
 
   // ⚠️ זה השם שהיה לך בישן – אם שונה, תגידי
   const sql = `
-    INSERT INTO user_lessons (user_name, lesson_id)
+    INSERT INTO user_lessons (user_id, lesson_id)
     VALUES (?, ?)
   `;
 
