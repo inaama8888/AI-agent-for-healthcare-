@@ -163,14 +163,24 @@ app.post("/api/register", (req, res) => {
   if (!name || !lesson_id) {
     return res.status(400).json({ error: "Missing data" });
   }
+ db.query("SELECT user_id FROM users WHERE full_name = ? LIMIT 1", [name], (err, results) => {  
+    if (err) {
+      console.error("❌ DB ERROR:", err); 
+      return res.status(500).json({ error: "Database error" }); 
+    } 
+    if (results.length === 0) {
+      return res.status(400).json({ error: "User not found" });
+    }
+    const user_id = results[0].user_id;
 
+ 
   // ⚠️ זה השם שהיה לך בישן – אם שונה, תגידי
   const sql = `
     INSERT INTO user_lessons (user_id, lesson_id)
     VALUES (?, ?)
   `;
 
-  db.query(sql, [name, lesson_id], (err) => {
+  db.query(sql, [user_id, lesson_id], (err) => {
     if (err) {
       console.error("❌ REGISTRATION ERROR:", err);
 
@@ -184,6 +194,7 @@ app.post("/api/register", (req, res) => {
 
     res.json({ status: "OK" });
   });
+});
 });
 /* ================================
    שליפת שיעורים
