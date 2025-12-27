@@ -132,26 +132,27 @@ app.use(cors());
 /* ================================
    בדיקת משתמש קיים
 ================================ */
-app.post("/api/check-user", (req, res) => {
+app.post("/api/check-user", async (req, res) => {
   const { name } = req.body;
 
   if (!name) {
     return res.status(400).json({ error: "Name is required" });
   }
 
-  const sql = "SELECT * FROM users WHERE full_name = ? LIMIT 1";
-
-  db.query(sql, [name], (err, result) => {
-    if (err) {
-      console.error("❌ DB ERROR:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM users WHERE full_name = ? LIMIT 1",
+      [name]
+    );
 
     res.json({
-      exists: result.length > 0,
-      user: result[0] || null,
+      exists: rows.length > 0,
+      user: rows[0] || null,
     });
-  });
+  } catch (err) {
+    console.error("❌ DB ERROR:", err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
   ///vranv
   /* ================================
