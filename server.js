@@ -199,20 +199,18 @@ app.post("/api/register", (req, res) => {
 /* ================================
    שליפת שיעורים
 ================================ */
-app.get("/api/lessons", (req, res) => {
-  const sql = `
-    SELECT lesson_id, topic AS title, instructor, date, seats, city
-    FROM lessons
-  `;
+app.get("/api/lessons", async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT lesson_id, topic AS title, instructor, date, seats, city
+      FROM lessons
+    `);
 
-  db.query(sql, (err, result) => {
-    if (err) {
-      console.error("❌ DB ERROR:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
-
-    res.json({ lessons: result });
-  });
+    res.json({ lessons: rows });
+  } catch (err) {
+    console.error("❌ DB ERROR:", err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 /* ================================

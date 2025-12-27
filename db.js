@@ -35,6 +35,6 @@ const pool = mysql.createPool({
   keepAliveInitialDelay: 0,
 });
 
-console.log("✅ MySQL Pool (promise) ready");
+console.log("✅ MySQL Pool ready");
 
 module.exports = pool;
