@@ -157,45 +157,42 @@ app.post("/api/check-user", (req, res) => {
   /* ================================
    הרשמה לשיעור  ✅ (שלב 1)
 ================================ */
-app.post("/api/register", (req, res) => {
+app.post("/api/register", async (req, res) => {
   const { name, lesson_id } = req.body;
 
   if (!name || !lesson_id) {
     return res.status(400).json({ error: "Missing data" });
   }
- db.query("SELECT user_id FROM users WHERE full_name = ? LIMIT 1", [name], (err, results) => {  
-    if (err) {
-      console.error("❌ DB ERROR:", err); 
-      return res.status(500).json({ error: "Database error" }); 
-    } 
-    if (results.length === 0) {
+
+  try {
+    const [users] = await db.query(
+      "SELECT user_id FROM users WHERE full_name = ? LIMIT 1",
+      [name]
+    );
+
+    if (users.length === 0) {
       return res.status(400).json({ error: "User not found" });
     }
-    const user_id = results[0].user_id;
 
- 
-  // ⚠️ זה השם שהיה לך בישן – אם שונה, תגידי
-  const sql = `
-    INSERT INTO user_lessons (user_id, lesson_id)
-    VALUES (?, ?)
-  `;
+    const user_id = users[0].user_id;
 
-  db.query(sql, [user_id, lesson_id], (err) => {
-    if (err) {
-      console.error("❌ REGISTRATION ERROR:", err);
-
-      // טיפול במקרה של הרשמה כפולה / מלא
-      if (err.code === "ER_DUP_ENTRY") {
-        return res.json({ status: "FULL" });
-      }
-
-      return res.status(500).json({ error: "Registration failed" });
-    }
+    await db.query(
+      "INSERT INTO user_lessons (user_id, lesson_id) VALUES (?, ?)",
+      [user_id, lesson_id]
+    );
 
     res.json({ status: "OK" });
-  });
+  } catch (err) {
+    console.error("❌ REGISTRATION ERROR:", err);
+
+    if (err.code === "ER_DUP_ENTRY") {
+      return res.json({ status: "FULL" });
+    }
+
+    res.status(500).json({ error: "Registration failed" });
+  }
 });
-});
+
 /* ================================
    שליפת שיעורים
 ================================ */
