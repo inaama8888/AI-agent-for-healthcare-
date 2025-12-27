@@ -60,7 +60,7 @@ const normalizeChoice = (raw) => {
   /* ========= INIT ========= */
   useEffect(() => {
     if (mainMessages.length === 0) {
-      sendBot("שלום וברוכה הבאה 🌸 מה שמך?");
+     sendBot("שלום וברוך הבא 🌸 מה שמך?");
       setStep("greet");
     }
     // eslint-disable-next-line
@@ -68,7 +68,7 @@ const normalizeChoice = (raw) => {
 
   /* ========= MENUS ========= */
   const showMainMenu = () => {
-    sendBot("בחרי פעולה:");
+    sendBot("בחר פעולה:");
     sendBot(
       "1️⃣ הרשמה לשיעור\n2️⃣ שאלות ותשובות\n3️⃣ תמיכה רגשית"
     );
@@ -76,7 +76,7 @@ const normalizeChoice = (raw) => {
   };
 
   const showSearchMenu = () => {
-    sendBot("איך תרצי לחפש שיעור?");
+    sendBot("איך תרצה לחפש שיעור?");
     sendBot("1️⃣ כל השיעורים\n2️⃣ לפי עיר\n3️⃣ לפי נושא");
     setStep("search_menu");
   };
@@ -89,7 +89,7 @@ const normalizeChoice = (raw) => {
     try {
       const res = await axios.post("/api/check-user", { name });
       if (!res.data.exists) {
-        sendBot("השם לא נמצא במערכת. נסי שוב:");
+        sendBot("השם לא נמצא במערכת. נסה שוב:");
         return;
       }
       setUserName(name);
@@ -112,7 +112,7 @@ const normalizeChoice = (raw) => {
       setLessons(res.data.lessons);
       sendBot("רשימת השיעורים:");
       res.data.lessons.forEach((l, i) => sendBot(formatLesson(l, i)));
-      sendBot("הקלידי מספר שיעור:");
+      sendBot("הקלד מספר שיעור:");
       setStep("register");
     } catch {
       sendBot("שגיאה בטעינת שיעורים.");
@@ -134,7 +134,7 @@ const normalizeChoice = (raw) => {
 
       setLessons(res.data.lessons);
       res.data.lessons.forEach((l, i) => sendBot(formatLesson(l, i)));
-      sendBot("הקלידי מספר שיעור:");
+      sendBot("הקלד מספר שיעור:");
       setStep("register");
     } catch {
       sendBot("שגיאה בחיפוש לפי עיר.");
@@ -155,7 +155,7 @@ const normalizeChoice = (raw) => {
 
       setLessons(res.data.lessons);
       res.data.lessons.forEach((l, i) => sendBot(formatLesson(l, i)));
-      sendBot("הקלידי מספר שיעור:");
+      sendBot("הקלד מספר שיעור:");
       setStep("register");
     } catch {
       sendBot("שגיאה בחיפוש לפי נושא.");
@@ -202,7 +202,7 @@ const normalizeChoice = (raw) => {
 
   /* ========= FAQ ========= */
   const startFAQ = () => {
-    sendBot("בחרי נושא לשאלות:");
+    sendBot("בחר נושא לשאלות:");
     sendBot(
       "1️⃣ שאלות על שיעורים\n2️⃣ שאלות על העמותה\n3️⃣ שאלות על המנחים\n0️⃣ חזרה"
     );
