@@ -51,7 +51,7 @@ const normalizeChoice = (raw) => {
   const formatLesson = (l, i) =>
     [
       `${i + 1}. ${l.title}`,
-      `עיר: ${l.city || "ZOOM"}`,
+      `מיקום: ${l.city || "ZOOM"}`,
       `תאריך: ${formatDate(l.date)}`,
       `מנחה: ${l.instructor || "-"}`,
       `מקומות: ${l.seats ?? "-"}`,
