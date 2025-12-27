@@ -17,7 +17,6 @@
 // });
 
 // /module.exports = db;
-
 require("dotenv").config();
 const mysql = require("mysql2/promise");
 
@@ -31,10 +30,9 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 5,
   queueLimit: 0,
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
-});
 
-console.log("✅ MySQL Pool ready");
+  // 👇 זה החלק החשוב
+  connectTimeout: 10000,
+});
 
 module.exports = pool;
