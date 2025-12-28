@@ -3,7 +3,8 @@ import axios from "axios";
 import "../styles/Chat.css";
 import { ChatContext } from "../contexts/ChatContext";
 import { API_BASE } from "../config";
-
+const NAV_HOME = "0";
+const NAV_BACK = "9";
 
 function Chat() {
 const normalizeChoice = (raw) => {
@@ -55,6 +56,7 @@ const normalizeChoice = (raw) => {
       `תאריך: ${formatDate(l.date)}`,
       `מנחה: ${l.instructor || "-"}`,
       `מקומות: ${l.seats ?? "-"}`,
+      
     ].join("\n");
 
   /* ========= INIT ========= */
@@ -77,7 +79,13 @@ const normalizeChoice = (raw) => {
 
   const showSearchMenu = () => {
     sendBot("איך תרצה לחפש שיעור?");
-    sendBot("1️⃣ כל השיעורים\n2️⃣ לפי עיר\n3️⃣ לפי נושא");
+    sendBot(
+    "1 - כל השיעורים\n" +
+    "2 - לפי עיר\n" +
+    "3 - לפי נושא\n" +
+    "4 - לפי מנחה\n\n" +
+    "0 - תפריט ראשי | 9 - חזרה אחורה"
+  );
     setStep("search_menu");
   };
 
@@ -112,7 +120,8 @@ const normalizeChoice = (raw) => {
       setLessons(res.data.lessons);
       sendBot("רשימת השיעורים:");
       res.data.lessons.forEach((l, i) => sendBot(formatLesson(l, i)));
-      sendBot("הקלד מספר שיעור:");
+sendBot("הקלד מספר שיעור");
+sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
       setStep("register");
     } catch {
       sendBot("שגיאה בטעינת שיעורים.");
@@ -120,27 +129,59 @@ const normalizeChoice = (raw) => {
     }
   };
 
-  const searchByCity = async (raw) => {
-     const city = raw.trim();
+ const searchByCity = async (raw) => {
+  const city = raw.trim();
+  if (!city) return sendBot("נא להזין עיר.");
 
-    if (!city) return sendBot("נא להזין עיר.");
+  try {
+    const res = await axios.get(
+      `${API_BASE}/api/lessons?city=${encodeURIComponent(city)}`
+    );
 
-    try {
-      const res = await axios.get(`/api/lessons?city=${city}`);
-      if (!res.data.lessons.length) {
-        sendBot("לא נמצאו שיעורים בעיר זו.");
-        return showSearchMenu();
-      }
-
-      setLessons(res.data.lessons);
-      res.data.lessons.forEach((l, i) => sendBot(formatLesson(l, i)));
-      sendBot("הקלד מספר שיעור:");
-      setStep("register");
-    } catch {
-      sendBot("שגיאה בחיפוש לפי עיר.");
-      showSearchMenu();
+    if (!res.data.lessons.length) {
+      sendBot("לא נמצאו שיעורים בעיר זו.");
+      return showSearchMenu();
     }
-  };
+
+    setLessons(res.data.lessons);
+    res.data.lessons.forEach((l, i) =>
+      sendBot(formatLesson(l, i))
+    );
+
+sendBot("הקלד מספר שיעור");
+sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
+    setStep("register");
+  } catch {
+    sendBot("שגיאה בחיפוש לפי עיר.");
+    showSearchMenu();
+  }
+};
+
+const searchByInstructor = async (raw) => {
+  const instructor = raw.trim();
+  if (!instructor) return sendBot("נא להזין שם מנחה.");
+
+  try {
+    const res = await axios.get(
+      `${API_BASE}/api/lessons?instructor=${encodeURIComponent(instructor)}`
+    );
+
+    if (!res.data.lessons.length) {
+      sendBot("לא נמצאו שיעורים עם מנחה זה.");
+      return showSearchMenu();
+    }
+
+    setLessons(res.data.lessons);
+    res.data.lessons.forEach((l, i) => sendBot(formatLesson(l, i)));
+
+sendBot("הקלד מספר שיעור");
+sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
+    setStep("register");
+  } catch {
+    sendBot("שגיאה בחיפוש לפי מנחה.");
+    showSearchMenu();
+  }
+};
 
   const searchByTopic = async (raw) => {
   const topic = raw.trim();
@@ -155,7 +196,8 @@ const normalizeChoice = (raw) => {
 
       setLessons(res.data.lessons);
       res.data.lessons.forEach((l, i) => sendBot(formatLesson(l, i)));
-      sendBot("הקלד מספר שיעור:");
+sendBot("הקלד מספר שיעור");
+sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
       setStep("register");
     } catch {
       sendBot("שגיאה בחיפוש לפי נושא.");
@@ -289,42 +331,95 @@ const normalizeChoice = (raw) => {
         setStep("emotional");
       } else sendBot("בחירה לא תקינה.");
     },
-    search_menu: (raw) => {
-       const c = normalizeChoice(raw);
-      if (c === "1") loadAllLessons();
-      else if (c === "2") {
-        sendBot("הקלידי עיר:");
-        setStep("search_city");
-      } else if (c === "3") {
-        sendBot("הקלידי נושא:");
-        setStep("search_topic");
-      } else sendBot("בחירה לא תקינה.");
-    },
+search_menu: (raw) => {
+  const c = normalizeChoice(raw);
+
+  if (c === "1") loadAllLessons();
+
+  else if (c === "2") {
+    sendBot("הקלידי עיר:");
+    setStep("search_city");
+  }
+
+  else if (c === "3") {
+    sendBot("הקלידי נושא:");
+    setStep("search_topic");
+  }
+
+  else if (c === "4") {
+    sendBot("הקלידי שם מנחה:");
+    setStep("search_instructor");
+  }
+
+  else sendBot("בחירה לא תקינה.");
+},
     search_city: searchByCity,
     search_topic: searchByTopic,
     register: handleRegister,
     after_register: handleAfterRegister,
     faq: handleFAQ,
     emotional: handleEmotionalSupport,
+    search_instructor: searchByInstructor,
+
   };
 
-  const handleSend = () => {
-    if (!mainInput.trim()) return;
+  const goHome = () => {
+  sendBot("חזרה לתפריט הראשי 🏠");
+  showMainMenu();
+  setStep("main_menu");
+};
 
-    const text = mainInput.trim();
-    const currentStep = step;
+const goBack = () => {
+  sendBot("חזרה אחורה 🔙");
 
-    sendUser(text);
+  // מיפוי פשוט של שלבים לאחור
+  const backMap = {
+    search_city: "choose_search_method",
+    search_topic: "choose_search_method",
+    register: "choose_search_method",
+    emotional_feeling: "main_menu",
+    choose_search_method: "main_menu",
+    after_register_menu: "main_menu",
+  };
 
-    if (handlers[currentStep]) {
-      handlers[currentStep](text);
-    } else {
-      sendBot("משהו השתבש, חוזרים לתפריט");
-      showMainMenu();
-    }
+  const prev = backMap[step] || "main_menu";
+  setStep(prev);
 
+  if (prev === "main_menu") showMainMenu();
+  else if (prev === "choose_search_method") {
+    sendBot("כיצד תרצי לחפש שיעור?");
+    sendBot(["1 - כל השיעורים", "2 - לפי עיר", "3 - לפי נושא", "0 - חזרה"].join("\n"));
+  }
+};
+
+const handleSend = () => {
+  if (!mainInput.trim()) return;
+
+  const text = mainInput.trim();
+  sendUser(text);
+
+  // ניווט גלובלי – עובד מכל שלב
+  if (text === "0") {
     setMainInput("");
-  };
+    return goHome();
+  }
+
+  if (text === "9") {
+    setMainInput("");
+    return goBack();
+  }
+
+  const currentStep = step;
+
+  if (handlers[currentStep]) {
+    handlers[currentStep](text);
+  } else {
+    sendBot("משהו השתבש, חוזרים לתפריט");
+    showMainMenu();
+  }
+
+  setMainInput("");
+};
 
   return (
     <div className="chat-container">

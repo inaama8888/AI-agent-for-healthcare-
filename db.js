@@ -17,7 +17,11 @@
 // });
 
 // /module.exports = db;
+console.log("DATABASE_URL =", process.env.DATABASE_URL);
+
 require("dotenv").config();
+console.log("DATABASE_URL =", process.env.DATABASE_URL);
+
 const mysql = require("mysql2/promise");
 
 const pool = mysql.createPool({

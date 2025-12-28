@@ -198,12 +198,43 @@ app.post("/api/register", async (req, res) => {
    שליפת שיעורים
 ================================ */
 app.get("/api/lessons", async (req, res) => {
-  try {
-    const [rows] = await db.query(`
-      SELECT lesson_id, topic AS title, instructor, date, seats, city
-      FROM lessons
-    `);
+  const { city, topic, instructor, level } = req.query;
 
+  console.log("📍 QUERY:", { city, topic, instructor, level });
+
+  try {
+    let query = `
+      SELECT lesson_id, topic AS title, instructor, level, date, seats, city
+      FROM lessons
+      WHERE 1=1
+    `;
+    const params = [];
+
+    // עיר – התאמה מלאה
+    if (city) {
+      query += " AND city = ?";
+      params.push(city);
+    }
+
+    // נושא – התאמה חלקית
+    if (topic) {
+      query += " AND topic LIKE ?";
+      params.push(`%${topic}%`);
+    }
+
+    // מנחה – התאמה חלקית
+    if (instructor) {
+      query += " AND instructor LIKE ?";
+      params.push(`%${instructor}%`);
+    }
+
+    // רמה – התאמה חלקית
+    if (level) {
+      query += " AND level LIKE ?";
+      params.push(`%${level}%`);
+    }
+
+    const [rows] = await db.query(query, params);
     res.json({ lessons: rows });
   } catch (err) {
     console.error("❌ DB ERROR:", err);
@@ -211,12 +242,15 @@ app.get("/api/lessons", async (req, res) => {
   }
 });
 
+
+
 /* ================================
    ROUTES נוספים
 ================================ */
 app.use("/api/faq", require("./routes/faqRoute"));
 app.use("/api/emotional-support", require("./routes/emotionalSupportRoute"));
 const path = require("path");
+// only prod
 
 app.use(express.static(path.join(__dirname, "client", "build")));
 
