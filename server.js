@@ -296,4 +296,4 @@ app.listen(PORT, () => {
 
 
 //telgerm
-require("./telegramBot");
+// require("./telegramBot");
