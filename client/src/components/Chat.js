@@ -34,6 +34,11 @@ const normalizeChoice = (raw) => {
   /* ========= FAQ STATE ========= */
   const [faqMode, setFaqMode] = useState("choose");
   const [faqType, setFaqType] = useState(null);
+  const [userPhone, setUserPhone] = useState("");
+const [lastRegisteredLesson, setLastRegisteredLesson] = useState(null);
+
+
+
   const [faqSelectedLesson, setFaqSelectedLesson] = useState(null);
 
   /* ========= HELPERS ========= */
@@ -58,12 +63,33 @@ const normalizeChoice = (raw) => {
       `מקומות: ${l.seats ?? "-"}`,
       
     ].join("\n");
+ 
+
+
+      // ===== Google Calendar Link =====
+  const createGoogleCalendarLink = (lesson) => {
+    const start = new Date(lesson.date);
+    const end = new Date(start.getTime() + 60 * 60 * 1000); // שעה
+
+    const formatGoogleDate = (d) =>
+      d.toISOString().replace(/[-:]|\.\d{3}/g, "");
+
+    const params = new URLSearchParams({
+      action: "TEMPLATE",
+      text: lesson.title,
+      dates: `${formatGoogleDate(start)}/${formatGoogleDate(end)}`,
+      details: `שיעור מיינדפולנס\nמנחה: ${lesson.instructor || ""}`,
+      location: lesson.city || "ZOOM",
+    });
+
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
+  };
 
   /* ========= INIT ========= */
   useEffect(() => {
     if (mainMessages.length === 0) {
-     sendBot("שלום וברוך הבא 🌸 מה שמך?");
-      setStep("greet");
+    sendBot("שלום וברוך הבא 🌸 נא להזין מספר טלפון:");
+setStep("ask_phone");
     }
     // eslint-disable-next-line
   }, []);
@@ -90,23 +116,55 @@ const normalizeChoice = (raw) => {
   };
 
   /* ========= LOGIN ========= */
-  const handleName = async () => {
-    const name = mainInput.trim();
-    if (!name) return sendBot("נא להזין שם.");
+const handlePhone = async () => {
+  const phone = mainInput.trim();
 
-    try {
-      const res = await axios.post("/api/check-user", { name });
-      if (!res.data.exists) {
-        sendBot("השם לא נמצא במערכת. נסה שוב:");
-        return;
-      }
-      setUserName(name);
-      sendBot(`נעים מאוד ${name} 💙`);
+  if (!phone) {
+    return sendBot("נא להזין מספר טלפון");
+  }
+
+  try {
+    const res = await axios.post("/api/check-user", { phone });
+
+    setUserPhone(phone);
+
+    if (res.data.exists) {
+  const fullName = res.data.user.full_name;
+
+setUserName(fullName);
+
+sendBot(`שלום ${fullName} `);
+sendBot("מה תרצה לעשות היום?");
       showMainMenu();
-    } catch {
-      sendBot("שגיאה בחיבור לשרת.");
+    } else {
+      sendBot("לא מצאנו אותך במערכת. איך קוראים לך?");
+      setStep("ask_name");
     }
-  };
+  } catch (err) {
+    console.error(err);
+    sendBot("שגיאה בחיבור לשרת");
+  }
+};
+ const handleNewUserName = async () => {
+  const name = mainInput.trim();
+
+  if (!name) {
+    return sendBot("נא להזין שם");
+  }
+
+  try {
+    await axios.post("/api/create-user", {
+      phone: userPhone,
+      full_name: name,
+    });
+
+    sendBot(`נעים מאוד ${name} 💙`);
+    showMainMenu();
+  } catch (err) {
+    console.error(err);
+    sendBot("שגיאה ביצירת משתמש");
+  }
+};
 
   /* ========= LESSON SEARCH ========= */
   const loadAllLessons = async () => {
@@ -206,33 +264,49 @@ sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
   };
 
   /* ========= REGISTER (שלב 1) ========= */
-  const handleRegister = async (raw) => {
+ const handleRegister = async (raw) => {
   const index = Number(raw.trim()) - 1;
-    if (isNaN(index) || index < 0 || index >= lessons.length) {
-      return sendBot("מספר לא תקין.");
+
+  if (isNaN(index) || index < 0 || index >= lessons.length) {
+    return sendBot("מספר לא תקין.");
+  }
+
+  const lesson = lessons[index];
+
+  try {
+    const res = await axios.post("/api/register", {
+      phone: userPhone,
+      lesson_id: lesson.lesson_id,
+    });
+
+    if (res.data.status === "FULL") {
+      sendBot("השיעור מלא ❌");
+      return showSearchMenu();
     }
 
-    const lesson = lessons[index];
+    sendBot(`נרשמת לשיעור: ${lesson.title} `);
+const calendarLink = createGoogleCalendarLink(lesson);
 
-    try {
-      const res = await axios.post("/api/register", {
-        name: userName,
-        lesson_id: lesson.lesson_id,
-      });
+sendBot(`
+📅 להוספת תזכורת ליומן<br/>
+<a href="${calendarLink}" target="_blank" class="calendar-btn">
+  ➕ הוספה ליומן Google
+</a>
+`);
 
-      if (res.data.status === "FULL") {
-        sendBot("השיעור מלא ❌");
-        return showSearchMenu();
-      }
+sendBot("1️⃣ חזרה לתפריט\n2️⃣ חיפוש נוסף");
+setStep("after_register");
 
-      sendBot(`נרשמת לשיעור: ${lesson.title} ✅`);
-      sendBot("1️⃣ חזרה לתפריט\n2️⃣ חיפוש נוסף");
-      setStep("after_register");
-    } catch {
-      sendBot("שגיאה בהרשמה לשיעור ❌");
-      showSearchMenu();
-    }
-  };
+   
+
+
+  } catch (err) {
+    console.error(err);
+    sendBot("שגיאה בהרשמה לשיעור ❌");
+    showSearchMenu();
+  }
+};
+
 
   const handleAfterRegister = (raw) => {
       const c = raw.trim();
@@ -310,7 +384,7 @@ sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
     sendBot("יוצרת עבורך תרגול 🧘‍♀️");
     const res = await axios.post("/api/emotional-support", {
       feeling,
-      userName,
+  phone: userPhone,
     });
 
     const ex = res.data.mindfulness_exercise;
@@ -320,48 +394,54 @@ sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
   };
 
   /* ========= ROUTER ========= */
-  const handlers = {
-    greet: handleName,
-    main_menu: (raw) => {
-      const c = normalizeChoice(raw);
-      if (c === "1") showSearchMenu();
-      else if (c === "2") startFAQ();
-      else if (c === "3") {
-        sendBot("מה את מרגישה עכשיו?");
-        setStep("emotional");
-      } else sendBot("בחירה לא תקינה.");
-    },
-search_menu: (raw) => {
-  const c = normalizeChoice(raw);
+ const handlers = {
+  // ✅ זיהוי חדש לפי טלפון
+  ask_phone: handlePhone,
+  ask_name: handleNewUserName,
 
-  if (c === "1") loadAllLessons();
+  main_menu: (raw) => {
+    const c = normalizeChoice(raw);
+    if (c === "1") showSearchMenu();
+    else if (c === "2") startFAQ();
+    else if (c === "3") {
+      sendBot("מה את מרגישה עכשיו?");
+      setStep("emotional");
+    } else sendBot("בחירה לא תקינה.");
+  },
 
-  else if (c === "2") {
-    sendBot("הקלידי עיר:");
-    setStep("search_city");
-  }
+  search_menu: (raw) => {
+    const c = normalizeChoice(raw);
 
-  else if (c === "3") {
-    sendBot("הקלידי נושא:");
-    setStep("search_topic");
-  }
+    if (c === "1") loadAllLessons();
+    else if (c === "2") {
+      sendBot("הקלידי עיר:");
+      setStep("search_city");
+    }
+    else if (c === "3") {
+      sendBot("הקלידי נושא:");
+      setStep("search_topic");
+    }
+    else if (c === "4") {
+      sendBot("הקלידי שם מנחה:");
+      setStep("search_instructor");
+    }
+    else sendBot("בחירה לא תקינה.");
+  },
 
-  else if (c === "4") {
-    sendBot("הקלידי שם מנחה:");
-    setStep("search_instructor");
-  }
+  search_city: searchByCity,
+  search_topic: searchByTopic,
+  search_instructor: searchByInstructor,
 
-  else sendBot("בחירה לא תקינה.");
-},
-    search_city: searchByCity,
-    search_topic: searchByTopic,
-    register: handleRegister,
-    after_register: handleAfterRegister,
-    faq: handleFAQ,
-    emotional: handleEmotionalSupport,
-    search_instructor: searchByInstructor,
+  register: handleRegister,
+  after_register: handleAfterRegister,
 
-  };
+  faq: handleFAQ,
+  emotional: handleEmotionalSupport,
+
+
+ 
+};
+
 
   const goHome = () => {
   sendBot("חזרה לתפריט הראשי 🏠");
@@ -425,7 +505,11 @@ const handleSend = () => {
     <div className="chat-container">
       <div className="messages">
         {mainMessages.map((m, i) => (
-          <div key={i} className={m.sender}>{m.text}</div>
+         <div
+  key={i}
+  className={m.sender}
+  dangerouslySetInnerHTML={{ __html: m.text }}
+/>
         ))}
       </div>
 

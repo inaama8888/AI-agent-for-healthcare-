@@ -133,42 +133,66 @@ app.use(cors());
    בדיקת משתמש קיים
 ================================ */
 app.post("/api/check-user", async (req, res) => {
-  const { name } = req.body;
+  const { phone } = req.body;
 
-  if (!name) {
-    return res.status(400).json({ error: "Name is required" });
+  if (!phone) {
+    return res.status(400).json({ error: "Phone is required" });
   }
 
   try {
     const [rows] = await db.query(
-      "SELECT * FROM users WHERE full_name = ? LIMIT 1",
-      [name]
+      "SELECT * FROM users WHERE phone = ? LIMIT 1",
+      [phone]
     );
 
     res.json({
       exists: rows.length > 0,
       user: rows[0] || null,
     });
-  } catch (err) {
-    console.error("❌ DB ERROR:", err);
+  } catch {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+
+app.post("/api/create-user", async (req, res) => {
+  const { phone, full_name } = req.body;
+
+  if (!phone || !full_name) {
+    return res.status(400).json({ error: "Missing data" });
+  }
+
+  try {
+    const [result] = await db.query(
+      "INSERT INTO users (phone, full_name) VALUES (?, ?)",
+      [phone, full_name]
+    );
+
+    res.json({ user_id: result.insertId });
+  } catch (err) {
+    if (err.code === "ER_DUP_ENTRY") {
+      return res.status(400).json({ error: "User already exists" });
+    }
+    console.error(err);
+    res.status(500).json({ error: "Failed to create user" });
+  }
+});
+
   ///vranv
   /* ================================
    הרשמה לשיעור  ✅ (שלב 1)
 ================================ */
 app.post("/api/register", async (req, res) => {
-  const { name, lesson_id } = req.body;
+  const { phone, lesson_id } = req.body;
 
-  if (!name || !lesson_id) {
+  if (!phone || !lesson_id) {
     return res.status(400).json({ error: "Missing data" });
   }
 
   try {
     const [users] = await db.query(
-      "SELECT user_id FROM users WHERE full_name = ? LIMIT 1",
-      [name]
+      "SELECT user_id FROM users WHERE phone = ? LIMIT 1",
+      [phone]
     );
 
     if (users.length === 0) {
@@ -193,6 +217,7 @@ app.post("/api/register", async (req, res) => {
     res.status(500).json({ error: "Registration failed" });
   }
 });
+
 
 /* ================================
    שליפת שיעורים
@@ -268,3 +293,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+
+
+//telgerm
+require("./telegramBot");

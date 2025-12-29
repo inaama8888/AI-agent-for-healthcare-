@@ -380,3 +380,29 @@ html, body, .chat-container, .messages{
 .screen.show {
   display: block;
 }
+
+.calendar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 6px;
+  padding: 8px 14px;
+
+  background: #e8f0fe; /* כחול עדין */
+  color: #1a4fd8;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  border-radius: 18px;
+  text-decoration: none;
+
+  border: 1px solid #d2e3fc;
+  transition: all 0.2s ease;
+}
+
+.calendar-btn:hover {
+  background: #dbe7fd;
+  border-color: #c6dafc;
+}

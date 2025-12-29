@@ -1,4 +1,6 @@
+
 const express = require("express");
+
 const router = express.Router();
 const fs = require("fs");
 const path = require("path");
@@ -16,104 +18,117 @@ const contextText = fs.readFileSync(
 );
 
 router.post("/", async (req, res) => {
-  const { type, question } = req.body;
+  console.log("🔥 FAQ ROUTE CALLED");
 
-  // 🔥 לוג ראשי – חובה
-  console.log("====================================");
-  console.log("📥 FAQ ROUTE HIT");
-  console.log("👉 BODY:", req.body);
-  console.log("👉 TYPE:", type);
-  console.log("👉 QUESTION:", question);
-  console.log("====================================");
+  try {
+    console.log("📦 RAW BODY:", req.body);
 
-  if (!type || !question) {
-    console.log("❌ Missing type or question");
-    return res.json({ answer: "חסרים נתונים בשאלה." });
-  }
+    const { type, question, lesson } = req.body;
 
-  // =========================
-  // 1️⃣ שאלות על שיעורים
-  // =========================
-  if (type === "LESSONS") {
-    console.log("📘 ENTERED LESSONS FLOW");
+    console.log("🧩 Parsed:");
+    console.log("➡️ type:", type);
+    console.log("➡️ question:", question);
+    console.log("➡️ lesson:", lesson);
 
-    db.query("SELECT * FROM Lessons", async (err, lessons) => {
-      if (err) {
-        console.error("❌ DB ERROR:", err);
-        return res.json({ answer: "שגיאה בשליפת שיעורים." });
+    if (!type || !question) {
+      console.log("❌ Missing type or question");
+      return res.json({ answer: "חסרים נתונים בשאלה." });
+    }
+
+    // =========================
+    // שאלות על שיעורים
+    // =========================
+    if (type === "LESSONS") {
+      console.log("📘 ENTERED LESSONS FLOW");
+
+      let lessons = [];
+
+      if (lesson?.lesson_id) {
+        console.log("🎯 Query specific lesson:", lesson.lesson_id);
+
+        const result = await db.query(
+          "SELECT * FROM lessons WHERE lesson_id = ?",
+          [lesson.lesson_id]
+        );
+
+        console.log("🗄 DB RESULT (specific):", result);
+
+        lessons = result[0];
+      } else {
+        console.log("📚 Query ALL lessons");
+
+        const result = await db.query("SELECT * FROM lessons");
+
+        console.log("🗄 DB RESULT (all):", result);
+
+        lessons = result[0];
       }
 
-      console.log("📘 Lessons count:", lessons.length);
+      console.log("📘 Lessons length:", lessons?.length);
 
-      const lessonsText = lessons.map(l => `
+      if (!lessons || lessons.length === 0) {
+        console.log("⚠️ No lessons found");
+        return res.json({
+          answer: "לא נמצא מידע על השיעור המבוקש.",
+        });
+      }
+
+const lessonsText = lessons.map(l => `
 מספר שיעור: ${l.lesson_id}
-נושא: ${l.topic}
+נושא: ${l.topic || l.title}
+מנחה: ${l.instructor || "לא צוין"}
+רמה: ${l.level || "לא צוין"}
 עיר: ${l.city || "לא צוין"}
 תאריך: ${l.date}
 תיאור: ${l.description || "אין תיאור"}
 `).join("\n");
+console.log("🧠 LESSONS TEXT SENT TO AI:\n", lessonsText);
 
-      const prompt = `
-ענה אך ורק על סמך המידע הבא.
-אם אין תשובה – אמור: "לא נמצא מידע על כך."
 
-${lessonsText}
-
-שאלה:
-"${question}"
-`;
-
-      console.log("📘 PROMPT SENT TO OPENAI (LESSONS)");
+      console.log("🧠 Prompt built");
 
       const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }],
+        messages: [{ role: "user", content: lessonsText + "\n\nשאלה:\n" + question }],
         temperature: 0.2,
       });
 
-      console.log("✅ OpenAI response received (LESSONS)");
+      console.log("🤖 OpenAI RESPONSE:", completion.choices[0].message.content);
 
-      return res.json({ answer: completion.choices[0].message.content });
+      return res.json({
+        answer: completion.choices[0].message.content,
+      });
+    }
+
+    // =========================
+    // עמותה / מנחים
+    // =========================
+    if (type === "ORG" || type === "INSTRUCTORS") {
+      console.log("🌱 ENTERED ORG / INSTRUCTORS FLOW");
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: contextText + "\n\nשאלה:\n" + question }],
+        temperature: 0.2,
+      });
+
+      console.log("🤖 OpenAI RESPONSE:", completion.choices[0].message.content);
+
+      return res.json({
+        answer: completion.choices[0].message.content,
+      });
+    }
+
+    console.log("❌ TYPE NOT SUPPORTED:", type);
+    return res.json({ answer: "סוג שאלה לא נתמך." });
+
+  } catch (err) {
+    console.error("🔥 FAQ ROUTE CRASHED:", err);
+    return res.status(500).json({
+      answer: "שגיאת שרת פנימית.",
     });
-
-    return;
   }
-
-  // =========================
-  // 2️⃣ שאלות על העמותה / מנחים
-  // =========================
-  if (type === "ORG" || type === "INSTRUCTORS") {
-    console.log("🌱 ENTERED ORG / INSTRUCTORS FLOW");
-
-    const prompt = `
-ענה אך ורק על סמך הטקסט הבא.
-אסור להמציא מידע.
-אם אין מידע – אמור: "אין לי מידע על כך."
-
-${contextText}
-
-שאלה:
-"${question}"
-`;
-
-    console.log("🌱 PROMPT SENT TO OPENAI (ORG / INSTRUCTORS)");
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.2,
-    });
-
-    console.log("✅ OpenAI response received (ORG / INSTRUCTORS)");
-
-    return res.json({ answer: completion.choices[0].message.content });
-  }
-
-  // =========================
-  // fallback
-  // =========================
-  console.log("❌ FALLBACK – TYPE NOT SUPPORTED:", type);
-  return res.json({ answer: "סוג שאלה לא נתמך." });
 });
+
 
 module.exports = router;
