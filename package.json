@@ -14,9 +14,9 @@
     "geolib": "^3.3.4",
     "mysql2": "^3.15.3",
     "node-telegram-bot-api": "^0.67.0",
-    "nodemailer": "^7.0.12",
     "openai": "^4.0.0",
-    "react-router-dom": "^7.10.1"
+    "react-router-dom": "^7.10.1",
+    "resend": "^6.6.0"
   },
   "repository": {
     "type": "git",
