@@ -1,10 +1,10 @@
-import React, { useEffect, useContext, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../styles/Chat.css";
-import { ChatContext } from "../contexts/ChatContext";
+
+
 import { API_BASE } from "../config";
-const NAV_HOME = "0";
-const NAV_BACK = "9";
+
 
 function Chat() {
 const normalizeChoice = (raw) => {
@@ -17,25 +17,20 @@ const normalizeChoice = (raw) => {
   return raw.trim();
 };
 
-  
-  const {
-    mainMessages,
-    setMainMessages,
-    mainInput,
-    setMainInput,
-    step,
-    setStep,
-    userName,
-    setUserName,
-    lessons,
-    setLessons,
-  } = useContext(ChatContext);
 
   /* ========= FAQ STATE ========= */
   const [faqMode, setFaqMode] = useState("choose");
   const [faqType, setFaqType] = useState(null);
   const [userPhone, setUserPhone] = useState("");
-const [lastRegisteredLesson, setLastRegisteredLesson] = useState(null);
+  const [lastSearchCity, setLastSearchCity] = useState("");
+
+   // 🔹 במקום Context
+  const [mainMessages, setMainMessages] = useState([]);
+  const [mainInput, setMainInput] = useState("");
+  const [step, setStep] = useState("ask_phone");
+  const [userName, setUserName] = useState("");
+  const [lessons, setLessons] = useState([]);
+
 
 
 
@@ -64,7 +59,14 @@ const [lastRegisteredLesson, setLastRegisteredLesson] = useState(null);
       
     ].join("\n");
  
+const isValidIsraeliPhone = (phone) => {
+  const cleaned = phone.replace(/[\s-]/g, "");
 
+  const israelPhoneRegex =
+    /^(?:\+972|972|0)(5[0-9]|[23489])[0-9]{7}$/;
+
+  return israelPhoneRegex.test(cleaned);
+};
 
       // ===== Google Calendar Link =====
   const createGoogleCalendarLink = (lesson) => {
@@ -88,7 +90,7 @@ const [lastRegisteredLesson, setLastRegisteredLesson] = useState(null);
   /* ========= INIT ========= */
   useEffect(() => {
     if (mainMessages.length === 0) {
-    sendBot("שלום וברוך הבא 🌸 נא להזין מספר טלפון:");
+    sendBot("שלום וברוך הבא  נא להזין מספר טלפון:");
 setStep("ask_phone");
     }
     // eslint-disable-next-line
@@ -106,11 +108,11 @@ setStep("ask_phone");
   const showSearchMenu = () => {
     sendBot("איך תרצה לחפש שיעור?");
     sendBot(
-    "1 - כל השיעורים\n" +
-    "2 - לפי עיר\n" +
-    "3 - לפי נושא\n" +
-    "4 - לפי מנחה\n\n" +
-    "0 - תפריט ראשי | 9 - חזרה אחורה"
+    "1️⃣ כל השיעורים\n" +
+    "2️⃣ לפי עיר\n" +
+    "3️⃣ לפי נושא\n" +
+    "4️⃣ לפי מנחה\n\n" +
+    "0️⃣תפריט ראשי |9️⃣ חזרה אחורה"
   );
     setStep("search_menu");
   };
@@ -118,54 +120,71 @@ setStep("ask_phone");
   /* ========= LOGIN ========= */
 const handlePhone = async () => {
   const phone = mainInput.trim();
-
-  if (!phone) {
-    return sendBot("נא להזין מספר טלפון");
+  if (!phone) return sendBot("נא להזין מספר טלפון");
+ if (!isValidIsraeliPhone(phone)) {
+    return sendBot(
+      "❌ מספר הטלפון לא תקין\nנא להזין מספר ישראלי (לדוגמה: 0501234567)"
+    );
   }
 
   try {
     const res = await axios.post("/api/check-user", { phone });
-
     setUserPhone(phone);
 
-    if (res.data.exists) {
-  const fullName = res.data.user.full_name;
-
-setUserName(fullName);
-
-sendBot(`שלום ${fullName} `);
-sendBot("מה תרצה לעשות היום?");
+    if (res.data.status === "APPROVED") {
+      setUserName(res.data.user.full_name);
+      sendBot(`שלום ${res.data.user.full_name} 💙`);
       showMainMenu();
-    } else {
+      return;
+    }
+
+    if (res.data.status === "PENDING") {
+      sendBot("הבקשה שלך כבר התקבלה 🌿");
+      sendBot("ניצור קשר לאחר אישור העמותה 💙");
+      setStep("done");
+      return;
+    }
+
+    if (res.data.status === "NEW") {
       sendBot("לא מצאנו אותך במערכת. איך קוראים לך?");
       setStep("ask_name");
+      return;
     }
   } catch (err) {
     console.error(err);
     sendBot("שגיאה בחיבור לשרת");
   }
 };
- const handleNewUserName = async () => {
+
+const handleNewUserName = async () => {
   const name = mainInput.trim();
+  if (!name) return sendBot("נא להזין שם");
 
-  if (!name) {
-    return sendBot("נא להזין שם");
-  }
-
-  try {
-    await axios.post("/api/create-user", {
-      phone: userPhone,
-      full_name: name,
-    });
-
-    sendBot(`נעים מאוד ${name} 💙`);
-    showMainMenu();
-  } catch (err) {
-    console.error(err);
-    sendBot("שגיאה ביצירת משתמש");
-  }
+  setUserName(name);
+  sendBot(`תודה ${name} 💙`);
+  sendBot("רוצה לשתף בקצרה מה הביא אותך אלינו? (אפשר בקצרה)");
+  setStep("ask_reason");
 };
 
+
+const handleAskReason = async () => {
+  const reason = mainInput.trim();
+
+  try {
+    await axios.post("/api/pending-users", {
+      full_name: userName,
+      phone: userPhone,
+      reason,
+    });
+
+    sendBot("הבקשה נקלטה 🌱");
+    sendBot("נחזור אלייך לאחר אישור העמותה 💙");
+    setStep("done");
+  } catch (err) {
+    console.error(err);
+    sendBot("שגיאה בשמירת הבקשה");
+  }
+};
   /* ========= LESSON SEARCH ========= */
   const loadAllLessons = async () => {
     try {
@@ -179,7 +198,7 @@ sendBot("מה תרצה לעשות היום?");
       sendBot("רשימת השיעורים:");
       res.data.lessons.forEach((l, i) => sendBot(formatLesson(l, i)));
 sendBot("הקלד מספר שיעור");
-sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
+sendBot("0️⃣ תפריט ראשי\n9️⃣ חזרה אחורה");
       setStep("register");
     } catch {
       sendBot("שגיאה בטעינת שיעורים.");
@@ -190,7 +209,7 @@ sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
  const searchByCity = async (raw) => {
   const city = raw.trim();
   if (!city) return sendBot("נא להזין עיר.");
-
+  setLastSearchCity(city);
   try {
     const res = await axios.get(
       `${API_BASE}/api/lessons?city=${encodeURIComponent(city)}`
@@ -198,7 +217,10 @@ sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
 
     if (!res.data.lessons.length) {
       sendBot("לא נמצאו שיעורים בעיר זו.");
-      return showSearchMenu();
+      sendBot("האם תרצי לראות שיעורים בערים קרובות?");
+  sendBot("1️⃣ כן\n2️⃣ לא");
+  setStep("ask_nearby_city");
+      return ;
     }
 
     setLessons(res.data.lessons);
@@ -207,13 +229,53 @@ sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
     );
 
 sendBot("הקלד מספר שיעור");
-sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
+sendBot("0️⃣ תפריט ראשי\n9️⃣  חזרה אחורה");
     setStep("register");
   } catch {
     sendBot("שגיאה בחיפוש לפי עיר.");
     showSearchMenu();
   }
 };
+
+const askNearbyCity = async (raw) => {
+  const c = raw.trim();
+
+  if (c === "2") {
+    sendBot("בסדר, חזרנו לחיפוש 🔍");
+    return showSearchMenu();
+  }
+
+  if (c !== "1") {
+    return sendBot("נא לבחור 1 או 2");
+  }
+
+  try {
+    const res = await axios.post("/api/lessons/nearby", {
+      city: lastSearchCity, // 👈 שומרת את העיר שהוקלדה
+    });
+
+    if (!res.data.nearby.length) {
+      sendBot("לא נמצאו שיעורים קרובים גם כן 😔");
+      return showSearchMenu();
+    }
+
+    sendBot("מצאתי שיעורים קרובים:");
+    setLessons(res.data.nearby);
+    res.data.nearby.forEach((l, i) =>
+      sendBot(
+        `${i + 1}. ${l.title}\nמיקום: ${l.city}\nמרחק: ${l.distance.toFixed(1)} ק״מ`
+      )
+    );
+
+    sendBot("הקלד מספר שיעור");
+    setStep("register");
+  } catch (err) {
+    console.error(err);
+    sendBot("שגיאה בחיפוש שיעורים קרובים");
+    showSearchMenu();
+  }
+};
+
 
 const searchByInstructor = async (raw) => {
   const instructor = raw.trim();
@@ -233,7 +295,7 @@ const searchByInstructor = async (raw) => {
     res.data.lessons.forEach((l, i) => sendBot(formatLesson(l, i)));
 
 sendBot("הקלד מספר שיעור");
-sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
+sendBot("0️⃣ תפריט ראשי\n9️⃣ חזרה אחורה");
     setStep("register");
   } catch {
     sendBot("שגיאה בחיפוש לפי מנחה.");
@@ -313,7 +375,7 @@ setStep("after_register");
 
     if (c === "1") showMainMenu();
     else if (c === "2") showSearchMenu();
-    else sendBot("נא לבחור 1 או 2");
+    else sendBot("נא לבחור 1️⃣ או 2️⃣");
   };
 
   /* ========= FAQ ========= */
@@ -379,9 +441,9 @@ setStep("after_register");
   /* ========= EMOTIONAL ========= */
   const handleEmotionalSupport = async () => {
     const feeling = mainInput.trim();
-    if (!feeling) return sendBot("מה את מרגישה?");
+    if (!feeling) return sendBot("מה אתה מרגיש?");
 
-    sendBot("יוצרת עבורך תרגול 🧘‍♀️");
+    sendBot("נוצר תרגול במיוחד בשבילך:)");
     const res = await axios.post("/api/emotional-support", {
       feeling,
   phone: userPhone,
@@ -390,6 +452,7 @@ setStep("after_register");
     const ex = res.data.mindfulness_exercise;
     sendBot(`🧘‍♀️ ${ex.title}`);
     ex.steps.forEach((s, i) => sendBot(`שלב ${i + 1}: ${s}`));
+    sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
     showMainMenu();
   };
 
@@ -397,14 +460,14 @@ setStep("after_register");
  const handlers = {
   // ✅ זיהוי חדש לפי טלפון
   ask_phone: handlePhone,
-  ask_name: handleNewUserName,
+  
 
   main_menu: (raw) => {
     const c = normalizeChoice(raw);
     if (c === "1") showSearchMenu();
     else if (c === "2") startFAQ();
     else if (c === "3") {
-      sendBot("מה את מרגישה עכשיו?");
+     sendBot("מה אתה מרגיש עכשיו?");
       setStep("emotional");
     } else sendBot("בחירה לא תקינה.");
   },
@@ -414,15 +477,15 @@ setStep("after_register");
 
     if (c === "1") loadAllLessons();
     else if (c === "2") {
-      sendBot("הקלידי עיר:");
+      sendBot("הקלד עיר:");
       setStep("search_city");
     }
     else if (c === "3") {
-      sendBot("הקלידי נושא:");
+      sendBot("הקלד נושא:");
       setStep("search_topic");
     }
     else if (c === "4") {
-      sendBot("הקלידי שם מנחה:");
+      sendBot("הקלד שם מנחה:");
       setStep("search_instructor");
     }
     else sendBot("בחירה לא תקינה.");
@@ -437,7 +500,9 @@ setStep("after_register");
 
   faq: handleFAQ,
   emotional: handleEmotionalSupport,
-
+  ask_nearby_city: askNearbyCity,
+   ask_reason: handleAskReason,
+ ask_name: handleNewUserName,
 
  
 };
@@ -467,8 +532,8 @@ const goBack = () => {
 
   if (prev === "main_menu") showMainMenu();
   else if (prev === "choose_search_method") {
-    sendBot("כיצד תרצי לחפש שיעור?");
-    sendBot(["1 - כל השיעורים", "2 - לפי עיר", "3 - לפי נושא", "0 - חזרה"].join("\n"));
+    sendBot("כיצד תרצה לחפש שיעור?");
+    sendBot(["1️⃣  כל השיעורים", "2️⃣  לפי עיר", "3️⃣ לפי נושא", "4️⃣  חזרה"].join("\n"));
   }
 };
 
@@ -478,7 +543,9 @@ const handleSend = () => {
   const text = mainInput.trim();
   sendUser(text);
 
-  // ניווט גלובלי – עובד מכל שלב
+  const blockedSteps = ["ask_name", "ask_reason", "done"];
+
+if (!blockedSteps.includes(step)) {
   if (text === "0") {
     setMainInput("");
     return goHome();
@@ -488,6 +555,7 @@ const handleSend = () => {
     setMainInput("");
     return goBack();
   }
+}
 
   const currentStep = step;
 
@@ -495,7 +563,7 @@ const handleSend = () => {
     handlers[currentStep](text);
   } else {
     sendBot("משהו השתבש, חוזרים לתפריט");
-    showMainMenu();
+   // showMainMenu();
   }
 
   setMainInput("");
@@ -518,7 +586,7 @@ const handleSend = () => {
           value={mainInput}
           onChange={(e) => setMainInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          placeholder="הקלידי כאן..."
+          placeholder="הקלד כאן..."
         />
         <button onClick={handleSend}>שליחה</button>
       </div>

@@ -120,7 +120,7 @@ content:
 
 /* timestamp */
 .user::after,.bot::after{
-  content:"כעת";
+
   display:block;
   margin-top:6px;
   font-size:11px;
