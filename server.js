@@ -1,125 +1,17 @@
-// // const express = require("express");
-// // require("dotenv").config();
-// // console.log("🔑 OpenAI KEY loaded:", !!process.env.OPENAI_API_KEY);
 
-// // const cors = require("cors");
-
-// // const app = express();
-
-// // app.use(express.json());
-// // app.use(cors());
-// // app.use(express.static("Public"));
-
-// // // 🔗 חיבור למסד נתונים (פעם אחת)
-// // require("./db");
-
-// // // ======================================================
-// // // בדיקת משתמש קיים
-// // // ======================================================
-// // app.post("/api/check-user", (req, res) => {
-// //   const db = require("./db");
-// //   const { name } = req.body;
-
-// //   const sql = "SELECT * FROM Users WHERE full_name = ? LIMIT 1";
-// //   db.query(sql, [name], (err, result) => {
-// //     if (err) return res.json({ error: err });
-// //     res.json({ exists: result.length > 0, user: result[0] });
-// //   });
-// // });
-
-// // // ======================================================
-// // // שליפת שיעורים
-// // // ======================================================
-// // app.get("/api/lessons", (req, res) => {
-// //   const db = require("./db");
-
-// //   const sql = `
-// //     SELECT lesson_id, topic AS title, instructor, date, seats, city
-// //     FROM Lessons
-// //   `;
-
-// //   db.query(sql, (err, result) => {
-// //     if (err) return res.status(500).json({ error: err });
-// //     res.json({ lessons: result });
-// //   });
-// // });
-
-// // // ======================================================
-// // // ROUTES
-// // // ======================================================
-// // const faqRoute = require("./routes/faqRoute");
-// // app.use("/api/faq", faqRoute);
-
-// // const emotionalSupportRoute = require("./routes/emotionalSupportRoute");
-// // app.use("/api/emotional-support", emotionalSupportRoute);
-
-// // // ======================================================
-// // const PORT = 5000;
-// // app.listen(PORT, () =>
-// //   console.log(`🚀 Server running on http://localhost:${PORT}`)
-// // );
-
-
-
-// // שרת
-// const express = require("express");
-// require("dotenv").config();
-// const cors = require("cors");
-
-// const db = require("./db"); // 👈 פעם אחת בלבד
-
-// const app = express();
-
-// app.use(express.json());
-// app.use(cors());
-// app.use(express.static("Public"));
-
-// // ======================================================
-// // בדיקת משתמש קיים
-// // ======================================================
-// app.post("/api/check-user", (req, res) => {
-//   const { name } = req.body;
-
-//   const sql = "SELECT * FROM users WHERE full_name = ? LIMIT 1";
-//   db.query(sql, [name], (err, result) => {
-//     if (err) return res.status(500).json({ error: err });
-//     res.json({ exists: result.length > 0, user: result[0] });
-//   });
-// });
-
-// // ======================================================
-// // שליפת שיעורים
-// // ======================================================
-// app.get("/api/lessons", (req, res) => {
-//   const sql = `
-//     SELECT lesson_id, topic AS title, instructor, date, seats, city
-//     FROM lessons
-//   `;
-
-//   db.query(sql, (err, result) => {
-//     if (err) return res.status(500).json({ error: err });
-//     res.json({ lessons: result });
-//   });
-// });
-
-// // ======================================================
-// // ROUTES
-// // ======================================================
-// app.use("/api/faq", require("./routes/faqRoute"));
-// app.use("/api/emotional-support", require("./routes/emotionalSupportRoute"));
-
-// const PORT = process.env.PORT || 5000;
-// app.listen(PORT, () =>
-//   console.log(`🚀 Server running on port ${PORT}`)
-// );
 
 const express = require("express");
+const axios = require("axios");
 require("dotenv").config();
 const cors = require("cors");
 
 const db = require("./db"); // חיבור DB פעם אחת
+const crypto = require("crypto");
 
 const app = express();
+
+const { sendApprovalEmail } = require("./routes/mailer");
+
 
 app.use(express.json());
 app.use(cors());
@@ -140,19 +32,41 @@ app.post("/api/check-user", async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query(
-      "SELECT * FROM users WHERE phone = ? LIMIT 1",
+    // 1️⃣ בדיקה אם משתמש מאושר קיים
+    const [users] = await db.query(
+      "SELECT full_name FROM users WHERE phone = ? LIMIT 1",
       [phone]
     );
 
-    res.json({
-      exists: rows.length > 0,
-      user: rows[0] || null,
+    if (users.length > 0) {
+      return res.json({
+        status: "APPROVED",
+        user: users[0],
+      });
+    }
+
+    // 2️⃣ בדיקה אם קיימת בקשה בהמתנה
+    const [pending] = await db.query(
+      "SELECT request_id FROM pending_users WHERE phone = ? LIMIT 1",
+      [phone]
+    );
+
+    if (pending.length > 0) {
+      return res.json({
+        status: "PENDING",
+      });
+    }
+
+    // 3️⃣ משתמש חדש
+    return res.json({
+      status: "NEW",
     });
-  } catch {
-    res.status(500).json({ error: "Database error" });
+  } catch (err) {
+    console.error("check-user error:", err);
+    return res.status(500).json({ error: "Database error" });
   }
 });
+
 
 
 app.post("/api/create-user", async (req, res) => {
@@ -177,6 +91,45 @@ app.post("/api/create-user", async (req, res) => {
     res.status(500).json({ error: "Failed to create user" });
   }
 });
+
+
+/* ================================
+   יצירת בקשת הרשמה (pending)
+================================ */
+app.post("/api/pending-users", async (req, res) => {
+  const { full_name, phone, reason } = req.body;
+  const approvalToken = crypto.randomBytes(32).toString("hex");
+
+
+  if (!full_name || !phone) {
+    return res.status(400).json({ error: "Missing data" });
+  }
+
+  try {
+    
+    // 1️⃣ שמירה בטבלת pending_users
+    await db.query(
+      "INSERT INTO pending_users (full_name, phone, reason, approval_token) VALUES (?, ?, ?, ?)",
+      [full_name, phone, reason || null, approvalToken]
+    );
+
+    // 2️⃣ שליחת מייל למנהלת
+    await sendApprovalEmail({ full_name, phone, reason ,approvalToken});
+
+    // 3️⃣ תשובה ל־frontend / בוט
+    res.json({ status: "PENDING_CREATED" });
+  } catch (err) {
+    console.error("❌ pending-users error:", err);
+
+    if (err.code === "ER_DUP_ENTRY") {
+      return res.status(400).json({ error: "Request already exists" });
+    }
+
+    res.status(500).json({ error: "Failed to create pending user" });
+  }
+});
+
+
 
   ///vranv
   /* ================================
@@ -269,6 +222,8 @@ app.get("/api/lessons", async (req, res) => {
 
 
 
+
+
 /* ================================
    ROUTES נוספים
 ================================ */
@@ -285,6 +240,76 @@ app.get("*", (req, res) => {
   );
 });
 
+
+
+app.get("/api/approve", async (req, res) => {
+  const { token } = req.query;
+
+  if (!token) {
+    return res.status(400).send("Token missing");
+  }
+
+  try {
+    // 1️⃣ שליפת בקשה ממתינה
+    const [rows] = await db.query(
+      "SELECT full_name, phone FROM pending_users WHERE approval_token = ? AND status = 'pending' LIMIT 1",
+      [token]
+    );
+
+    if (!rows.length) {
+      return res.send("הקישור אינו תקף או שכבר טופל");
+    }
+
+    const { full_name, phone } = rows[0];
+
+    // 2️⃣ הכנסת המשתמש לטבלת users
+    await db.query(
+      "INSERT INTO users (full_name, phone) VALUES (?, ?)",
+      [full_name, phone]
+    );
+
+    // 3️⃣ עדכון הבקשה ל־approved
+    await db.query(
+      "UPDATE pending_users SET status = 'approved', approval_token = NULL WHERE phone = ?",
+      [phone]
+    );
+
+    res.send("✔️ הבקשה אושרה! המשתמש נוסף למערכת.");
+  } catch (err) {
+    console.error("❌ approve error:", err);
+
+    if (err.code === "ER_DUP_ENTRY") {
+      return res.send("המשתמש כבר קיים במערכת");
+    }
+
+    res.status(500).send("שגיאה באישור הבקשה");
+  }
+});
+
+app.get("/api/reject", async (req, res) => {
+  const { token } = req.query;
+
+  if (!token) {
+    return res.status(400).send("Token missing");
+  }
+
+  const [rows] = await db.query(
+    "SELECT * FROM pending_users WHERE approval_token = ? AND status = 'pending'",
+    [token]
+  );
+
+  if (!rows.length) {
+    return res.send("הקישור אינו תקף או שכבר טופל");
+  }
+
+  await db.query(
+    "UPDATE pending_users SET status = 'rejected', approval_token = NULL WHERE approval_token = ?",
+    [token]
+  );
+
+  res.send("❌ הבקשה נדחתה");
+});
+
 /* ================================
    START SERVER
 ================================ */
@@ -295,5 +320,7 @@ app.listen(PORT, () => {
 });
 
 
-//telgerm
-// require("./telegramBot");
+
+app.use("/api/lessons", require("./routes/nearbyLessonsRoute"));
+
+
