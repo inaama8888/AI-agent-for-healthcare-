@@ -1,16 +1,14 @@
 /* ================================
-   ZAHAVA – HEALING CHAT UI (2025)
+   ZAHAVA – HEALING CHAT UI (FINAL)
 ================================ */
 
 /* ===== Variables ===== */
 :root {
-  --bg-app: #eef2f6;
   --bg-canvas: #f7f9fb;
-
   --header-gradient: linear-gradient(135deg, #7f8fe6, #6fa3d8);
 
-  --bot-glass: rgba(255, 255, 255, 0.75);
-  --user-glass: rgba(230, 241, 255, 0.9);
+  --bot-glass: rgba(255, 255, 255, 0.8);
+  --user-glass: rgba(230, 241, 255, 0.95);
 
   --text-main: #1f2937;
   --text-muted: #6b7280;
@@ -25,28 +23,26 @@
   box-sizing: border-box;
 }
 
-
-
 /* ===== App shell ===== */
 .app-shell {
-    min-height: 100vh;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center; /* 👈 זה הקסם */
+  align-items: center;
   padding: 32px;
 }
 
 /* ===== Chat container ===== */
 .chat-container {
   width: 100%;
-  max-width: 900px; /* במקום 1200 */
-  height: 90vh;     /* 👈 נותן תחושת אפליקציה */
+  max-width: 900px;
+  height: 90vh;
   display: flex;
   flex-direction: column;
   background: var(--bg-canvas);
   border-radius: 24px;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.12);
-   -webkit-font-smoothing: antialiased;
+  -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
@@ -63,74 +59,55 @@
 /* ===== Messages area ===== */
 .messages {
   flex: 1;
-  padding: 32px 48px;
+  padding: 32px 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 18px;
+  align-items: center; /* ציר קבוע */
 }
 
 /* ===== Message base ===== */
 .message {
- max-width: 420px; 
+  width: 100%;
+  max-width: 420px;
   padding: 16px 18px;
   border-radius: var(--radius-xl);
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.65;
+  color: var(--text-main);
+  background: #fff;
   backdrop-filter: blur(12px);
   animation: fadeUp 0.25s ease;
   white-space: pre-line;
   position: relative;
 }
 
-/* ===== Bot message ===== */
+/* ===== Bot message (ימין) ===== */
 .message.bot {
-  
+  align-self: flex-end;
+  margin-right: 24px;
   background: var(--bot-glass);
   border-top-right-radius: 8px;
-  max-width: 420px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
 }
 
 .message.bot::after {
   content: "";
   display: block;
-  margin: 8px 0 0;
+  margin-top: 8px;
   height: 1px;
   background: rgba(0, 0, 0, 0.05);
 }
 
-.message.bot:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-}
-
-/* meta text */
-.message.bot .meta {
-  display: block;
-  margin-top: 6px;
-  font-size: 14px;
-  color: var(--text-muted);
-}
-
-/* spacing between lesson cards */
-.messages .message.bot + .message.bot {
-  margin-top: 6px;
-}
-
-/* ===== User message ===== */
+/* ===== User message (שמאל) ===== */
 .message.user {
+  align-self: flex-start;
+  margin-left: 24px;
   background: var(--user-glass);
   border-top-left-radius: 8px;
 }
-.message {
-  margin-inline-start: 0;
-  margin-inline-end: auto;
-}
 
-.message.bot {
-  margin-inline-start: auto;
-  margin-inline-end: 0;
-}
 /* ===== Choice chips ===== */
 .choices {
   display: flex;
@@ -175,12 +152,8 @@
   animation: blink 1.4s infinite both;
 }
 
-.typing span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.typing span:nth-child(3) {
-  animation-delay: 0.4s;
-}
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
 
 /* ===== Input ===== */
 .input-box {
@@ -227,43 +200,13 @@
 }
 
 @keyframes blink {
-  0% {
-    opacity: 0.2;
-  }
-  20% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.2;
-  }
+  0% { opacity: 0.2; }
+  20% { opacity: 1; }
+  100% { opacity: 0.2; }
 }
-.typing {
-  padding: 14px 18px;
-  background: var(--bot-glass);
-  border-radius: var(--radius-lg);
-  display: flex;
-  gap: 6px;
-  width: fit-content;
-}
+
 /* ===== Mobile ===== */
 @media (max-width: 768px) {
-  .messages {
-    padding: 24px 16px;
-  }
-
-  .message {
-    max-width: 94%;
-  }
-
-  .message.bot,
-  .message.user {
-    align-self: unset;
-  }
-
-  .message.bot::after {
-    display: none;
-  }
-
   .app-shell {
     padding: 0;
   }
@@ -272,5 +215,17 @@
     height: 100vh;
     max-width: 100%;
     border-radius: 0;
+  }
+
+  .message {
+    max-width: 100%;
+  }
+
+  .message.bot {
+    margin-right: 12px;
+  }
+
+  .message.user {
+    margin-left: 12px;
   }
 }
