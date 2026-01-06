@@ -108,8 +108,7 @@ body {
   animation: fadeUp 0.25s ease;
   background: rgba(255, 255, 255, 0.85);
 
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+
 }
 
 /* ===== Bot message ===== */
@@ -211,9 +210,13 @@ body {
 
 /* ===== Input ===== */
 .input-box {
-  padding: 16px 24px 24px;
+  padding: 18px 20px 24px;
+  background: linear-gradient(
+    to top,
+    #f9fbfd 75%,
+    rgba(249,251,253,0)
+  );
 }
-
 .input-inner {
   display: flex;
   gap: 12px;
@@ -284,14 +287,36 @@ body {
     border-radius: 0;
   }
 
-  .messages {
-    padding: 24px 16px;
-  }
+.messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 
-  .message {
-    max-width: 94%;
-  }
+  /* 🔥 זה ההבדל בין טופס לצ’אט */
+  align-items: center;
 
+  gap: 18px;
+  padding: 32px 48px;
+
+  overflow-y: auto;
+  scroll-behavior: smooth;
+
+  /* מונע זחילה בפרוד */
+  scrollbar-gutter: stable both-edges;
+}
+
+.message {
+  width: fit-content;
+  max-width: 70%;
+
+  padding: 16px 18px;
+  border-radius: var(--radius-xl);
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-line;
+  position: relative;
+  animation: fadeUp 0.25s ease;
+}
   .message.bot,
   .message.user {
     align-self: unset;
