@@ -46,6 +46,8 @@
   background: var(--bg-canvas);
   border-radius: 24px;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.12);
+   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* ===== Header ===== */
@@ -70,7 +72,7 @@
 
 /* ===== Message base ===== */
 .message {
-  max-width: 70%;
+ max-width: 420px; 
   padding: 16px 18px;
   border-radius: var(--radius-xl);
   font-size: 15px;
@@ -83,7 +85,7 @@
 
 /* ===== Bot message ===== */
 .message.bot {
-  align-self: flex-end;
+  
   background: var(--bot-glass);
   border-top-right-radius: 8px;
   max-width: 420px;
@@ -117,11 +119,18 @@
 
 /* ===== User message ===== */
 .message.user {
-  align-self: flex-start;
   background: var(--user-glass);
   border-top-left-radius: 8px;
 }
+.message {
+  margin-inline-start: 0;
+  margin-inline-end: auto;
+}
 
+.message.bot {
+  margin-inline-start: auto;
+  margin-inline-end: 0;
+}
 /* ===== Choice chips ===== */
 .choices {
   display: flex;
