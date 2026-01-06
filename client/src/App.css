@@ -1,21 +1,14 @@
-/* מחזיק את כל המסכים */
-.screen-shell {
-  position: relative;
+
+
+
+.App {
+  text-align: center;
+}
+
+.app-shell {
   width: 100%;
-  height: 100vh;
-  overflow: hidden;
-}
-
-/* שכבת מסך */
-.screen-layer {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 180ms ease;
-}
-
-.screen-layer.active {
-  opacity: 1;
-  pointer-events: auto;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
