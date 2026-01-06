@@ -1,6 +1,7 @@
 /* =================================================
-   ZAHAVA CHAT – IMPROVED PRODUCTION CSS
-   Mindfulness / Therapy Chat – Enhanced for RTL, Consistency, and Proportions
+   ZAHAVA CHAT – FINAL PRODUCTION CSS
+   Mindfulness / Therapy Chat
+   RTL • Proportions like LOCAL • Stable
    ================================================= */
 
 /* ===== Variables ===== */
@@ -20,7 +21,7 @@
 
   --radius-xl: 26px;
   --radius-lg: 20px;
-  --radius-sm: 8px; /* Added for better bubble tails */
+  --radius-sm: 8px;
 }
 
 /* ===== Reset ===== */
@@ -31,7 +32,7 @@
 }
 
 html {
-  direction: rtl; /* Ensure RTL globally */
+  direction: rtl;
 }
 
 html,
@@ -63,7 +64,6 @@ body {
   width: 100%;
   max-width: 880px;
   height: min(92vh, 880px);
-  max-height: 100dvh;
 
   background: #f9fbfd;
   border-radius: 32px;
@@ -88,91 +88,88 @@ body {
   font-weight: 600;
 }
 
-/* ===== Messages area ===== */
+/* =================================================
+   Messages area – EXACT like local
+   ================================================= */
 .messages {
   flex: 1;
-  padding: 32px 40px; /* Increased padding for better proportions like in local */
+  padding: 32px 40px; /* מרווחים גדולים ונדיבים כמו בלוקלי */
   overflow-y: auto;
 
   display: flex;
   flex-direction: column;
-  gap: 20px; /* Slightly increased gap for airiness */
+  gap: 20px;
 
   scroll-behavior: smooth;
-  overscroll-behavior: contain;
 }
 
 /* ===== Message base ===== */
 .message {
-  max-width: 70%;
-  padding: 16px 18px;
+  max-width: 72%;
+  padding: 16px 20px;
   border-radius: var(--radius-xl);
-  font-size: 15px;
-  line-height: 1.6;
-  white-space: pre-line;
+  font-size: 15.5px; /* קצת גדול יותר – כמו בלוקלי */
+  line-height: 1.65;
+  position: relative;
 
+  box-shadow: 0 8px 24px rgba(0,0,0,0.09);
   animation: fadeUp 0.25s ease;
-  position: relative; /* For tail pseudo-elements */
 }
 
-/* ===== Bot message ===== */
+/* =================================================
+   BOT MESSAGE (Left in RTL)
+   ================================================= */
 .message.bot {
-  align-self: end; /* Logical: left in RTL */
+  align-self: end;               /* שמאל ב-RTL */
   margin-inline-start: auto;
   margin-inline-end: 0;
+
   background: var(--bot-bg);
-
-  box-shadow: 0 12px 28px rgba(0,0,0,0.10);
-  border-start-end-radius: var(--radius-sm); /* Tail effect: smaller radius on top-right in RTL (effective left) */
+  border-top-right-radius: var(--radius-sm);
 }
 
-/* subtle divider */
-.message.bot::after {
-  content: "";
-  display: block;
-  margin-top: 8px;
-  height: 1px;
-  background: rgba(0,0,0,0.05);
-}
-
-/* Bot tail (pointing left in RTL) */
+/* זנב לבוט – מצביע שמאלה */
 .message.bot::before {
   content: "";
   position: absolute;
-  bottom: -8px;
-  left: -8px; /* Adjusted for RTL */
-  width: 16px;
-  height: 16px;
+  bottom: 0;
+  left: -6px;
+
+  width: 14px;
+  height: 14px;
   background: var(--bot-bg);
-  border-bottom-left-radius: 50%;
-  box-shadow: -2px 2px 4px rgba(0,0,0,0.05);
+
+  border-bottom-right-radius: 50%;
   transform: rotate(45deg);
+  box-shadow: 3px 3px 6px rgba(0,0,0,0.06);
 }
 
-/* ===== User message ===== */
+/* =================================================
+   USER MESSAGE (Right in RTL)
+   ================================================= */
 .message.user {
-  align-self: start; /* Logical: right in RTL */
+  align-self: start;             /* ימין ב-RTL */
   margin-inline-start: 0;
   margin-inline-end: auto;
+
   background: var(--user-bg);
-
-  border-start-start-radius: var(--radius-sm); /* Tail effect: smaller radius on top-left in RTL (effective right) */
-
-  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+  border-top-left-radius: var(--radius-sm);
 }
 
-/* User tail (pointing right in RTL) */
+/* זנב למשתמש – מצביע ימינה */
 .message.user::before {
   content: "";
   position: absolute;
-  bottom: -8px;
-  right: -8px; /* Adjusted for RTL */
-  width: 16px;
-  height: 16px;
+  bottom: 0;
+  right: -6px;
+
+  width: 14px;
+  height: 14px;
   background: var(--user-bg);
-  border-bottom-right-radius: 50%;
-  box-shadow: 2px 2px 4px rgba(0,0,0,0.05);
+
+  border-bottom-left-radius: 50%;
   transform: rotate(-45deg);
+  box-shadow: -3px 3px 6px rgba(0,0,0,0.06);
 }
 
 /* ===== Meta text ===== */
@@ -212,10 +209,14 @@ body {
 
 /* ===== Typing indicator ===== */
 .typing {
-  align-self: end; /* Logical for RTL */
+  align-self: end;
+  margin-inline-start: auto;
+  margin-inline-end: 0;
+
   padding: 14px 18px;
   background: var(--bot-bg);
   border-radius: var(--radius-lg);
+
   display: flex;
   gap: 6px;
 }
@@ -234,7 +235,7 @@ body {
 /* ===== Input ===== */
 .input-box {
   padding: 16px 20px 22px;
-  background: #f9fbfd; /* Match canvas for consistency */
+  background: #f9fbfd;
 }
 
 .input-inner {
@@ -304,7 +305,7 @@ body {
   }
 
   .messages {
-    padding: 24px 16px; /* Adjusted for mobile proportions */
+    padding: 24px 16px;
   }
 
   .message {
