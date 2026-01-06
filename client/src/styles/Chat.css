@@ -91,6 +91,8 @@ body {
 
   scroll-behavior: smooth;
   scrollbar-gutter: stable both-edges;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
 /* ===== Message base ===== */
