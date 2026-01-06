@@ -1,6 +1,6 @@
 /* =================================================
-   ZAHAVA CHAT – FINAL PRODUCTION CSS
-   Mindfulness / Therapy Chat
+   ZAHAVA CHAT – IMPROVED PRODUCTION CSS
+   Mindfulness / Therapy Chat – Enhanced for RTL, Consistency, and Proportions
    ================================================= */
 
 /* ===== Variables ===== */
@@ -20,6 +20,7 @@
 
   --radius-xl: 26px;
   --radius-lg: 20px;
+  --radius-sm: 8px; /* Added for better bubble tails */
 }
 
 /* ===== Reset ===== */
@@ -30,7 +31,7 @@
 }
 
 html {
-  direction: rtl;
+  direction: rtl; /* Ensure RTL globally */
 }
 
 html,
@@ -90,12 +91,12 @@ body {
 /* ===== Messages area ===== */
 .messages {
   flex: 1;
-  padding: 28px 36px;
+  padding: 32px 40px; /* Increased padding for better proportions like in local */
   overflow-y: auto;
 
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px; /* Slightly increased gap for airiness */
 
   scroll-behavior: smooth;
   overscroll-behavior: contain;
@@ -111,15 +112,18 @@ body {
   white-space: pre-line;
 
   animation: fadeUp 0.25s ease;
+  position: relative; /* For tail pseudo-elements */
 }
 
 /* ===== Bot message ===== */
 .message.bot {
-  align-self: flex-end;
+  align-self: end; /* Logical: left in RTL */
+  margin-inline-start: auto;
+  margin-inline-end: 0;
   background: var(--bot-bg);
 
-  box-shadow:
-    0 12px 28px rgba(0,0,0,0.10);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.10);
+  border-start-end-radius: var(--radius-sm); /* Tail effect: smaller radius on top-right in RTL (effective left) */
 }
 
 /* subtle divider */
@@ -131,15 +135,44 @@ body {
   background: rgba(0,0,0,0.05);
 }
 
+/* Bot tail (pointing left in RTL) */
+.message.bot::before {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: -8px; /* Adjusted for RTL */
+  width: 16px;
+  height: 16px;
+  background: var(--bot-bg);
+  border-bottom-left-radius: 50%;
+  box-shadow: -2px 2px 4px rgba(0,0,0,0.05);
+  transform: rotate(45deg);
+}
+
 /* ===== User message ===== */
 .message.user {
-  align-self: flex-start;
+  align-self: start; /* Logical: right in RTL */
+  margin-inline-start: 0;
+  margin-inline-end: auto;
   background: var(--user-bg);
 
-  border-top-left-radius: 8px;
+  border-start-start-radius: var(--radius-sm); /* Tail effect: smaller radius on top-left in RTL (effective right) */
 
-  box-shadow:
-    0 10px 24px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+}
+
+/* User tail (pointing right in RTL) */
+.message.user::before {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  right: -8px; /* Adjusted for RTL */
+  width: 16px;
+  height: 16px;
+  background: var(--user-bg);
+  border-bottom-right-radius: 50%;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.05);
+  transform: rotate(-45deg);
 }
 
 /* ===== Meta text ===== */
@@ -179,7 +212,7 @@ body {
 
 /* ===== Typing indicator ===== */
 .typing {
-  align-self: flex-end;
+  align-self: end; /* Logical for RTL */
   padding: 14px 18px;
   background: var(--bot-bg);
   border-radius: var(--radius-lg);
@@ -201,6 +234,7 @@ body {
 /* ===== Input ===== */
 .input-box {
   padding: 16px 20px 22px;
+  background: #f9fbfd; /* Match canvas for consistency */
 }
 
 .input-inner {
@@ -270,7 +304,7 @@ body {
   }
 
   .messages {
-    padding: 20px 14px;
+    padding: 24px 16px; /* Adjusted for mobile proportions */
   }
 
   .message {
