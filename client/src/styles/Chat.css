@@ -37,20 +37,23 @@ body {
 
 /* ===== App shell ===== */
 .app-shell {
-  height: 100vh;
+    min-height: 100vh;
   display: flex;
   justify-content: center;
+  align-items: center; /* 👈 זה הקסם */
+  padding: 32px;
 }
 
 /* ===== Chat container ===== */
 .chat-container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 900px; /* במקום 1200 */
+  height: 90vh;     /* 👈 נותן תחושת אפליקציה */
   display: flex;
   flex-direction: column;
   background: var(--bg-canvas);
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.12);
 }
 
 /* ===== Header ===== */
@@ -251,5 +254,15 @@ body {
 
   .message.bot::after {
     display: none;
+  }
+
+  .app-shell {
+    padding: 0;
+  }
+
+  .chat-container {
+    height: 100vh;
+    max-width: 100%;
+    border-radius: 0;
   }
 }
