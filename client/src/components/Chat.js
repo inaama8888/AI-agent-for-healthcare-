@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useRef } from "react";
 import axios from "axios";
 import "../styles/Chat.css";
+
 
 
 import { API_BASE } from "../config";
@@ -31,14 +32,18 @@ const normalizeChoice = (raw) => {
   const [userName, setUserName] = useState("");
   const [lessons, setLessons] = useState([]);
 
+const endRef = useRef(null);
 
 
 
   const [faqSelectedLesson, setFaqSelectedLesson] = useState(null);
 
   /* ========= HELPERS ========= */
-  const sendBot = (text) =>
-    setMainMessages((prev) => [...prev, { sender: "bot", text }]);
+const sendBot = (text, type = "normal") =>
+  setMainMessages((prev) => [
+    ...prev,
+    { sender: "bot", text, type },
+  ]);
 
   const sendUser = (text) =>
     setMainMessages((prev) => [...prev, { sender: "user", text }]);
@@ -90,12 +95,14 @@ const isValidIsraeliPhone = (phone) => {
   /* ========= INIT ========= */
   useEffect(() => {
     if (mainMessages.length === 0) {
-    sendBot("שלום וברוך הבא  נא להזין מספר טלפון:");
+sendBot("שלום, טוב שבאת. כדי שנוכל להתחיל, אשמח למספר הטלפון שלך.");
 setStep("ask_phone");
     }
     // eslint-disable-next-line
   }, []);
 
+
+  
   /* ========= MENUS ========= */
   const showMainMenu = () => {
     sendBot("בחר פעולה:");
@@ -216,11 +223,10 @@ sendBot("0️⃣ תפריט ראשי\n9️⃣ חזרה אחורה");
     );
 
     if (!res.data.lessons.length) {
-      sendBot("לא נמצאו שיעורים בעיר זו.");
-      sendBot("האם תרצי לראות שיעורים בערים קרובות?");
-  sendBot("1️⃣ כן\n2️⃣ לא");
-  setStep("ask_nearby_city");
-      return ;
+    
+  sendBot(`לא מצאנו שיעורים בעיר ${city} 🌿`);
+  sendBot("אחפש עבורך שיעורים קרובים...");
+  return searchNearby(city);
     }
 
     setLessons(res.data.lessons);
@@ -237,34 +243,36 @@ sendBot("0️⃣ תפריט ראשי\n9️⃣  חזרה אחורה");
   }
 };
 
-const askNearbyCity = async (raw) => {
-  const c = raw.trim();
 
-  if (c === "2") {
-    sendBot("בסדר, חזרנו לחיפוש 🔍");
-    return showSearchMenu();
-  }
-
-  if (c !== "1") {
-    return sendBot("נא לבחור 1 או 2");
-  }
-
+const searchNearby = async (city) => {
   try {
-    const res = await axios.post("/api/lessons/nearby", {
-      city: lastSearchCity, // 👈 שומרת את העיר שהוקלדה
-    });
+    const res = await axios.post("/api/lessons/nearby", { city });
+
+if (res.data.status === "CITY_NOT_FOUND") {
+  sendBot(`לא הצלחתי לזהות את "${city}" כעיר בישראל 🌿`);
+  showSearchMenu();
+  return;
+}
 
     if (!res.data.nearby.length) {
-      sendBot("לא נמצאו שיעורים קרובים גם כן 😔");
-      return showSearchMenu();
-    }
+  sendBot(
+    `לא נמצאו שיעורים בטווח של עד 10 ק״מ מהעיר ${city} 📍`
+  );
+  sendBot(
+    "השיעורים מוצגים לפי קרבה גיאוגרפית, כדי לשמור על נגישות 🌿"
+  );
+  sendBot("אפשר לבחור דרך אחרת לחיפוש:");
+  showSearchMenu();
+  return;
+}
 
-    sendBot("מצאתי שיעורים קרובים:");
+    sendBot("מצאתי עבורך שיעורים קרובים 🌍");
     setLessons(res.data.nearby);
+
     res.data.nearby.forEach((l, i) =>
-      sendBot(
-        `${i + 1}. ${l.title}\nמיקום: ${l.city}\nמרחק: ${l.distance.toFixed(1)} ק״מ`
-      )
+   sendBot(
+  `${i + 1}. ${l.title}\n📍 ${l.city}  ·  📏 ${l.distance.toFixed(1)} ק״מ`
+)
     );
 
     sendBot("הקלד מספר שיעור");
@@ -275,6 +283,8 @@ const askNearbyCity = async (raw) => {
     showSearchMenu();
   }
 };
+
+
 
 
 const searchByInstructor = async (raw) => {
@@ -421,7 +431,7 @@ setStep("after_register");
 
     if (faqMode === "chooseLesson") {
       const lesson = lessons[Number(text) - 1];
-      if (!lesson) return sendBot("בחירה לא תקינה.");
+      if (!lesson) return sendBot("בחירה לא תקינה. הזן מספר תקין");
       setFaqSelectedLesson(lesson);
       setFaqMode("ask");
       return sendBot(`איזו שאלה יש לך על "${lesson.title}"?`);
@@ -452,7 +462,6 @@ setStep("after_register");
     const ex = res.data.mindfulness_exercise;
     sendBot(`🧘‍♀️ ${ex.title}`);
     ex.steps.forEach((s, i) => sendBot(`שלב ${i + 1}: ${s}`));
-    sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
     showMainMenu();
   };
 
@@ -469,7 +478,7 @@ setStep("after_register");
     else if (c === "3") {
      sendBot("מה אתה מרגיש עכשיו?");
       setStep("emotional");
-    } else sendBot("בחירה לא תקינה.");
+    } else sendBot("בחירה לא תקינה. הזן מספר תקין");
   },
 
   search_menu: (raw) => {
@@ -477,7 +486,7 @@ setStep("after_register");
 
     if (c === "1") loadAllLessons();
     else if (c === "2") {
-      sendBot("הקלד עיר:");
+      sendBot("הקלד שם עיר בישראל (לדוגמה: תל אביב, חיפה):");
       setStep("search_city");
     }
     else if (c === "3") {
@@ -488,7 +497,7 @@ setStep("after_register");
       sendBot("הקלד שם מנחה:");
       setStep("search_instructor");
     }
-    else sendBot("בחירה לא תקינה.");
+    else sendBot("בחירה לא תקינה. הזן מספר תקין");
   },
 
   search_city: searchByCity,
@@ -500,7 +509,7 @@ setStep("after_register");
 
   faq: handleFAQ,
   emotional: handleEmotionalSupport,
-  ask_nearby_city: askNearbyCity,
+ // ask_nearby_city: askNearbyCity,
    ask_reason: handleAskReason,
  ask_name: handleNewUserName,
 
@@ -519,12 +528,12 @@ const goBack = () => {
 
   // מיפוי פשוט של שלבים לאחור
   const backMap = {
-    search_city: "choose_search_method",
-    search_topic: "choose_search_method",
-    register: "choose_search_method",
-    emotional_feeling: "main_menu",
-    choose_search_method: "main_menu",
-    after_register_menu: "main_menu",
+   search_city: "search_menu",
+  search_topic: "search_menu",
+  search_instructor: "search_menu",
+  register: "search_menu",
+  emotional: "main_menu",
+  after_register: "main_menu",
   };
 
   const prev = backMap[step] || "main_menu";
@@ -568,30 +577,71 @@ if (!blockedSteps.includes(step)) {
 
   setMainInput("");
 };
-
-  return (
+useEffect(() => {
+  endRef.current?.scrollIntoView({ behavior: "smooth" });
+}, [mainMessages]);
+return (
+  <div className="app-shell">
     <div className="chat-container">
+
+      <div className="chat-header">
+        זהבה – מרחב לתמיכה וחוסן
+      </div>
+
       <div className="messages">
         {mainMessages.map((m, i) => (
-         <div
-  key={i}
-  className={m.sender}
-  dangerouslySetInnerHTML={{ __html: m.text }}
-/>
+          <div key={i} className={`message ${m.sender}`}>
+            {m.text}
+
+            {m.choices && (
+              <div className="choices">
+                {m.choices.map((c, idx) => (
+                  <div
+                    key={idx}
+                    className="choice-chip"
+                   // onClick={() => handleChoice(c.value)}
+                  >
+                    {c.label}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         ))}
+
+        {/* {isTyping && (
+          <div className="typing">
+            <span />
+            <span />
+            <span />
+          </div>
+        )} */}
+
+        <div ref={endRef} />
       </div>
 
       <div className="input-box">
-        <input
-          value={mainInput}
-          onChange={(e) => setMainInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          placeholder="הקלד כאן..."
-        />
-        <button onClick={handleSend}>שליחה</button>
+        <div className="input-inner">
+          <input
+            value={mainInput}
+            onChange={(e) => setMainInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            placeholder="אפשר לכתוב כאן, בקצב שלך…"
+          />
+          <button className="send-btn" onClick={handleSend}>➤</button>
+        </div>
       </div>
+
     </div>
-  );
+  </div>
+);
+
+
+
+
+
+
+
 }
 
 export default Chat;

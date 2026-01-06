@@ -3,7 +3,6 @@ const axios = require("axios");
 const { getDistance } = require("geolib");
 const router = express.Router();
 const db = require("../db");
-
 async function getCityLocation(city) {
   const res = await axios.get(
     "https://nominatim.openstreetmap.org/search",
@@ -13,6 +12,7 @@ async function getCityLocation(city) {
         format: "json",
         limit: 1,
         countrycodes: "il",
+        addressdetails: 1,
       },
       headers: { "User-Agent": "ZahavaProject/1.0" },
     }
@@ -20,9 +20,19 @@ async function getCityLocation(city) {
 
   if (!res.data || !res.data.length) return null;
 
+  const place = res.data[0];
+
+  const hasValidAddress =
+    place.address?.city ||
+    place.address?.town ||
+    place.address?.village ||
+    place.address?.suburb;
+
+  if (!hasValidAddress) return null;
+
   return {
-    lat: Number(res.data[0].lat),
-    lng: Number(res.data[0].lon),
+    lat: Number(place.lat),
+    lng: Number(place.lon),
   };
 }
 
