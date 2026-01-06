@@ -1,9 +1,6 @@
 import React, { useEffect, useState,useRef } from "react";
 import axios from "axios";
 import "../styles/Chat.css";
-
-
-
 import { API_BASE } from "../config";
 
 
@@ -24,6 +21,8 @@ const normalizeChoice = (raw) => {
   const [faqType, setFaqType] = useState(null);
   const [userPhone, setUserPhone] = useState("");
   const [lastSearchCity, setLastSearchCity] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+
 
    // 🔹 במקום Context
   const [mainMessages, setMainMessages] = useState([]);
@@ -399,71 +398,89 @@ setStep("after_register");
   };
 
   const handleFAQ = async () => {
-    const text = mainInput.trim();
+  const text = mainInput.trim();
 
-    if (faqMode === "choose") {
-      if (text === "0") return showMainMenu();
+  if (faqMode === "choose") {
+    if (text === "0") return showMainMenu();
 
-      if (text === "1") {
-        setFaqType("LESSONS");
-        const res = await axios.get("/api/lessons");
-        setLessons(res.data.lessons);
-        sendBot("בחרי שיעור:");
-        res.data.lessons.forEach((l, i) =>
-          sendBot(`${i + 1}. ${l.title}`)
-        );
-        setFaqMode("chooseLesson");
-        return;
-      }
-
-      if (text === "2") {
-        setFaqType("ORG");
-        setFaqMode("ask");
-        return sendBot("שאלי כל שאלה על העמותה 🌱");
-      }
-
-      if (text === "3") {
-        setFaqType("INSTRUCTORS");
-        setFaqMode("ask");
-        return sendBot("שאלי כל שאלה על המנחים 💙");
-      }
+    if (text === "1") {
+      setFaqType("LESSONS");
+      const res = await axios.get("/api/lessons");
+      setLessons(res.data.lessons);
+      sendBot("בחרי שיעור:");
+      res.data.lessons.forEach((l, i) =>
+        sendBot(`${i + 1}. ${l.title}`)
+      );
+      setFaqMode("chooseLesson");
+      return;
     }
 
-    if (faqMode === "chooseLesson") {
-      const lesson = lessons[Number(text) - 1];
-      if (!lesson) return sendBot("בחירה לא תקינה. הזן מספר תקין");
-      setFaqSelectedLesson(lesson);
+    if (text === "2") {
+      setFaqType("ORG");
       setFaqMode("ask");
-      return sendBot(`איזו שאלה יש לך על "${lesson.title}"?`);
+      return sendBot("שאלי כל שאלה על העמותה 🌱");
     }
 
-    if (faqMode === "ask") {
+    if (text === "3") {
+      setFaqType("INSTRUCTORS");
+      setFaqMode("ask");
+      return sendBot("שאלי כל שאלה על המנחים 💙");
+    }
+  }
+
+  if (faqMode === "chooseLesson") {
+    const lesson = lessons[Number(text) - 1];
+    if (!lesson) return sendBot("בחירה לא תקינה. הזן מספר תקין");
+    setFaqSelectedLesson(lesson);
+    setFaqMode("ask");
+    return sendBot(`איזו שאלה יש לך על "${lesson.title}"?`);
+  }
+
+  if (faqMode === "ask") {
+    try {
+      setIsTyping(true); // 👈 כאן מתחיל "זהבה מקלידה…"
+
       const res = await axios.post("/api/faq", {
         type: faqType,
         question: text,
         lesson: faqSelectedLesson,
       });
+
+      setIsTyping(false); // 👈 נגמר
       sendBot(res.data.answer);
       showMainMenu();
+    } catch (err) {
+      setIsTyping(false);
+      sendBot("אירעה שגיאה במענה לשאלה ❌");
     }
-  };
+  }
+};
 
   /* ========= EMOTIONAL ========= */
-  const handleEmotionalSupport = async () => {
-    const feeling = mainInput.trim();
-    if (!feeling) return sendBot("מה אתה מרגיש?");
+const handleEmotionalSupport = async () => {
+  const feeling = mainInput.trim();
+  if (!feeling) return sendBot("מה אתה מרגיש?");
 
-    sendBot("נוצר תרגול במיוחד בשבילך:)");
+  try {
+    setIsTyping(true); // 👈 הבינה "חושבת"
+
     const res = await axios.post("/api/emotional-support", {
       feeling,
-  phone: userPhone,
+      phone: userPhone,
     });
+
+    setIsTyping(false);
 
     const ex = res.data.mindfulness_exercise;
     sendBot(`🧘‍♀️ ${ex.title}`);
     ex.steps.forEach((s, i) => sendBot(`שלב ${i + 1}: ${s}`));
     showMainMenu();
-  };
+  } catch (err) {
+    setIsTyping(false);
+    sendBot("לא הצלחתי ליצור תרגול כרגע 🌿");
+  }
+};
+
 
   /* ========= ROUTER ========= */
  const handlers = {
@@ -581,7 +598,6 @@ useEffect(() => {
   endRef.current?.scrollIntoView({ behavior: "smooth" });
 }, [mainMessages]);
 return (
-  <div className="app-shell">
     <div className="chat-container">
 
       <div className="chat-header">
@@ -619,7 +635,13 @@ return (
 
         <div ref={endRef} />
       </div>
-
+ {isTyping && (
+    <div className="message bot typing">
+      <span />
+      <span />
+      <span />
+    </div>
+  )}
       <div className="input-box">
         <div className="input-inner">
           <input
@@ -633,7 +655,7 @@ return (
       </div>
 
     </div>
-  </div>
+  
 );
 
 

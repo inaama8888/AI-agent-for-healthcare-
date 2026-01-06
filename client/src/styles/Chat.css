@@ -236,7 +236,14 @@ body {
     opacity: 0.2;
   }
 }
-
+.typing {
+  padding: 14px 18px;
+  background: var(--bot-glass);
+  border-radius: var(--radius-lg);
+  display: flex;
+  gap: 6px;
+  width: fit-content;
+}
 /* ===== Mobile ===== */
 @media (max-width: 768px) {
   .messages {
