@@ -1,17 +1,21 @@
-/* ================================
-   ZAHAVA – HEALING CHAT UI (FINAL)
-================================ */
+/* =================================================
+   ZAHAVA CHAT – PRODUCTION READY UI
+   Mindfulness / Therapy Chat
+   ================================================= */
 
 /* ===== Variables ===== */
 :root {
+  --bg-app: #eef2f6;
   --bg-canvas: #f7f9fb;
+
   --header-gradient: linear-gradient(135deg, #7f8fe6, #6fa3d8);
 
-  --bot-glass: rgba(255, 255, 255, 0.8);
-  --user-glass: rgba(230, 241, 255, 0.95);
+  --bot-bg: rgba(255, 255, 255, 0.78);
+  --user-bg: rgba(230, 241, 255, 0.92);
 
   --text-main: #1f2937;
   --text-muted: #6b7280;
+
   --accent: #6f8fe6;
 
   --radius-xl: 26px;
@@ -19,8 +23,23 @@
 }
 
 /* ===== Reset ===== */
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+html {
+  direction: rtl;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial;
+  background: var(--bg-app);
+  color: var(--text-main);
 }
 
 /* ===== App shell ===== */
@@ -36,59 +55,59 @@
 .chat-container {
   width: 100%;
   max-width: 900px;
-  height: 90vh;
+  height: min(90vh, 900px);
   display: flex;
   flex-direction: column;
   background: var(--bg-canvas);
   border-radius: 24px;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.12);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  overflow: hidden;
 }
 
 /* ===== Header ===== */
 .chat-header {
   background: var(--header-gradient);
-  color: #fff;
+  color: #ffffff;
   padding: 16px 24px;
   text-align: center;
   font-size: 18px;
   font-weight: 600;
+  letter-spacing: 0.2px;
 }
 
 /* ===== Messages area ===== */
 .messages {
   flex: 1;
-  padding: 32px 0;
+  padding: 32px 48px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 18px;
-  align-items: center; /* ציר קבוע */
+  scroll-behavior: smooth;
 }
 
 /* ===== Message base ===== */
 .message {
-  width: 100%;
-  max-width: 420px;
+  max-width: 70%;
   padding: 16px 18px;
   border-radius: var(--radius-xl);
   font-size: 15px;
-  line-height: 1.65;
-  color: var(--text-main);
-  background: #fff;
-  backdrop-filter: blur(12px);
-  animation: fadeUp 0.25s ease;
+  line-height: 1.6;
   white-space: pre-line;
   position: relative;
+  animation: fadeUp 0.25s ease;
+  background: rgba(255, 255, 255, 0.85);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-/* ===== Bot message (ימין) ===== */
+/* ===== Bot message ===== */
 .message.bot {
   align-self: flex-end;
-  margin-right: 24px;
-  background: var(--bot-glass);
+  background: var(--bot-bg);
   border-top-right-radius: 8px;
+  max-width: 420px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
 }
 
@@ -100,11 +119,27 @@
   background: rgba(0, 0, 0, 0.05);
 }
 
-/* ===== User message (שמאל) ===== */
+.message.bot:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* Meta text */
+.message.bot .meta {
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* spacing between bot cards */
+.messages .message.bot + .message.bot {
+  margin-top: 6px;
+}
+
+/* ===== User message ===== */
 .message.user {
   align-self: flex-start;
-  margin-left: 24px;
-  background: var(--user-glass);
+  background: var(--user-bg);
   border-top-left-radius: 8px;
 }
 
@@ -117,7 +152,7 @@
 }
 
 .choice-chip {
-  background: #fff;
+  background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 999px;
   padding: 10px 18px;
@@ -129,7 +164,7 @@
 
 .choice-chip:hover {
   background: var(--accent);
-  color: #fff;
+  color: #ffffff;
   transform: translateY(-1px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
@@ -137,7 +172,7 @@
 /* ===== Typing indicator ===== */
 .typing {
   padding: 14px 18px;
-  background: var(--bot-glass);
+  background: var(--bot-bg);
   border-radius: var(--radius-lg);
   display: flex;
   gap: 6px;
@@ -152,8 +187,13 @@
   animation: blink 1.4s infinite both;
 }
 
-.typing span:nth-child(2) { animation-delay: 0.2s; }
-.typing span:nth-child(3) { animation-delay: 0.4s; }
+.typing span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing span:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 /* ===== Input ===== */
 .input-box {
@@ -163,7 +203,7 @@
 .input-inner {
   display: flex;
   gap: 12px;
-  background: #fff;
+  background: #ffffff;
   border-radius: 999px;
   padding: 10px 14px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
@@ -174,6 +214,7 @@
   border: none;
   font-size: 15px;
   outline: none;
+  background: transparent;
 }
 
 .send-btn {
@@ -182,9 +223,15 @@
   border-radius: 50%;
   border: none;
   background: var(--accent);
-  color: #fff;
+  color: #ffffff;
   font-size: 18px;
   cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.send-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
 }
 
 /* ===== Animations ===== */
@@ -200,9 +247,15 @@
 }
 
 @keyframes blink {
-  0% { opacity: 0.2; }
-  20% { opacity: 1; }
-  100% { opacity: 0.2; }
+  0% {
+    opacity: 0.2;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.2;
+  }
 }
 
 /* ===== Mobile ===== */
@@ -217,15 +270,20 @@
     border-radius: 0;
   }
 
+  .messages {
+    padding: 24px 16px;
+  }
+
   .message {
-    max-width: 100%;
+    max-width: 94%;
   }
 
-  .message.bot {
-    margin-right: 12px;
-  }
-
+  .message.bot,
   .message.user {
-    margin-left: 12px;
+    align-self: unset;
+  }
+
+  .message.bot::after {
+    display: none;
   }
 }

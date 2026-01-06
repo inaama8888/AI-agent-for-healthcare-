@@ -543,6 +543,7 @@ const handleEmotionalSupport = async () => {
 const goBack = () => {
   sendBot("חזרה אחורה 🔙");
 
+  // מיפוי פשוט של שלבים לאחור
   const backMap = {
    search_city: "search_menu",
   search_topic: "search_menu",
@@ -597,6 +598,7 @@ useEffect(() => {
   endRef.current?.scrollIntoView({ behavior: "smooth" });
 }, [mainMessages]);
 return (
+  <div className="app-shell">
     <div className="chat-container">
 
       <div className="chat-header">
@@ -654,7 +656,7 @@ return (
       </div>
 
     </div>
-  
+  </div>
 );
 
 
