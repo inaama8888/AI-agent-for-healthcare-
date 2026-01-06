@@ -1,5 +1,6 @@
 /* =================================================
-   ZAHAVA CHAT – FINAL CSS (צר וממורכז כמו הלוקלי)
+   ZAHAVA CHAT – FINAL CSS (בדיוק כמו התמונה האחרונה)
+   צר, ממורכז, גבוה, צל חזק
    ================================================= */
 
 /* ===== Variables ===== */
@@ -40,7 +41,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ===== App shell – ממורכז ===== */
+/* ===== App shell – ממורכז עם מרווח קטן ===== */
 .app-shell {
   min-height: 100vh;
   background: var(--bg-app);
@@ -50,10 +51,10 @@ body {
   padding: 24px;
 }
 
-/* ===== Chat container – צר וממורכז כמו בלוקלי ===== */
+/* ===== Chat container – צר, גבוה, צל חזק כמו בתמונה ===== */
 .chat-container {
   width: 100%;
-  max-width: 880px;                  /* רוחב קבוע – צר וממורכז */
+  max-width: 880px;
   height: min(92vh, 880px);
   max-height: 100dvh;
   background: var(--bg-canvas);
@@ -186,8 +187,5 @@ body {
   }
   .messages {
     padding: 24px 20px;
-  }
-  .message {
-    max-width: 85%;
   }
 }
