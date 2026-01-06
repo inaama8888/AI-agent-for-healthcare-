@@ -1,6 +1,5 @@
 /* =================================================
-   ZAHAVA CHAT – EXACTLY LIKE PERFECT LOCAL
-   Full width, full height, clean & modern
+   ZAHAVA CHAT – FINAL CSS (רחב ומושלם כמו הלוקלי)
    ================================================= */
 
 /* ===== Variables ===== */
@@ -13,41 +12,42 @@
   --bot-bg: #ffffff;
   --user-bg: #e7efff;
 
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+
   --accent: #6f8fe6;
 
   --radius-xl: 26px;
   --radius-sm: 8px;
 }
 
-/* ===== Global Reset ===== */
+/* ===== Global Reset & RTL ===== */
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
-html, body, #root {
+html {
+  direction: rtl;
+  height: 100%;
+}
+
+body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-}
-
-html {
-  direction: rtl;
-}
-
-body {
-  margin: 0;
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   background: var(--bg-app);
+  color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ===== App shell – Full screen ===== */
+/* ===== App shell – מרווח קטן מאוד כדי שיהיה רחב ===== */
 .app-shell {
   height: 100vh;
   height: 100dvh;
   width: 100vw;
-  padding: 12px;                    /* מרווח קטן מסביב – בדיוק כמו בלוקלי המושלם */
+  padding: 12px;                     /* מרווח קטן ונעים מסביב – בדיוק כמו בלוקלי */
   margin: 0;
   background: var(--bg-app);
   display: flex;
@@ -55,43 +55,25 @@ body {
   align-items: center;
 }
 
-/* ===== Chat container – Wide and tall like perfect local ===== */
+/* ===== Chat container – רחב מקסימום כמו בלוקלי ===== */
 .chat-container {
-  width: 100%;
-  max-width: 1600px;                /* רחב מאוד – כמעט כל המסך */
+  width: 100%;                       /* 100% רוחב */
+  max-width: none !important;        /* מבטל כל הגבלה ישנה */
   height: 100%;
   max-height: 100dvh;
   background: var(--bg-canvas);
   border-radius: 32px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.15), 0 10px 30px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-/* Mobile – full screen, no radius, no shadow */
-@media (max-width: 768px) {
-  .app-shell {
-    padding: 0;
-  }
-  
-  .chat-container {
-    border-radius: 0;
-    box-shadow: none;
-    height: 100vh;
-    height: 100dvh;
-  }
-  
-  .chat-header {
-    border-radius: 0;
-  }
 }
 
 /* ===== Header ===== */
 .chat-header {
   background: var(--header-gradient);
   color: #ffffff;
-  padding: 18px 28px;
+  padding: 18px 32px;
   text-align: center;
   font-size: 18px;
   font-weight: 600;
@@ -101,7 +83,7 @@ body {
 /* ===== Messages area ===== */
 .messages {
   flex: 1;
-  padding: 32px 40px;               /* מרווחים נדיבים – בדיוק כמו בלוקלי */
+  padding: 30px 40px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -112,19 +94,20 @@ body {
 /* ===== Message base ===== */
 .message {
   max-width: 75%;
-  padding: 16px 22px;
+  padding: 18px 24px;
   border-radius: var(--radius-xl);
   font-size: 15.5px;
-  line-height: 1.65;
+  line-height: 1.7;
   position: relative;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-  animation: fadeUp 0.3s ease-out;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.09);
+  animation: fadeUp 0.3s ease;
 }
 
-/* Bot message – left */
+/* Bot message (שמאל ב-RTL) */
 .message.bot {
   align-self: end;
   margin-inline-start: auto;
+  margin-inline-end: 0;
   background: var(--bot-bg);
   border-top-right-radius: var(--radius-sm);
 }
@@ -133,18 +116,19 @@ body {
   content: "";
   position: absolute;
   bottom: 0;
-  left: -6px;
-  width: 14px;
-  height: 14px;
+  left: -7px;
+  width: 15px;
+  height: 15px;
   background: var(--bot-bg);
   border-bottom-right-radius: 50%;
   transform: rotate(45deg);
   box-shadow: 3px 3px 6px rgba(0,0,0,0.06);
 }
 
-/* User message – right */
+/* User message (ימין ב-RTL) */
 .message.user {
   align-self: start;
+  margin-inline-start: 0;
   margin-inline-end: auto;
   background: var(--user-bg);
   border-top-left-radius: var(--radius-sm);
@@ -154,26 +138,26 @@ body {
   content: "";
   position: absolute;
   bottom: 0;
-  right: -6px;
-  width: 14px;
-  height: 14px;
+  right: -7px;
+  width: 15px;
+  height: 15px;
   background: var(--user-bg);
   border-bottom-left-radius: 50%;
   transform: rotate(-45deg);
   box-shadow: -3px 3px 6px rgba(0,0,0,0.06);
 }
 
-/* ===== Input ===== */
+/* ===== Input box ===== */
 .input-box {
-  padding: 20px 28px 28px;
+  padding: 20px 30px 30px;
 }
 
 .input-inner {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   background: #ffffff;
   border-radius: 999px;
-  padding: 14px 20px;
+  padding: 16px 24px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
 }
 
@@ -181,29 +165,49 @@ body {
   flex: 1;
   border: none;
   outline: none;
-  font-size: 15.5px;
+  font-size: 16px;
   background: transparent;
 }
 
 .send-btn {
-  width: 48px;
-  height: 48px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background: var(--accent);
   color: white;
   border: none;
   font-size: 20px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .send-btn:hover {
   transform: scale(1.08);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
 
 /* ===== Animation ===== */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: none; }
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 768px) {
+  .app-shell {
+    padding: 0;
+  }
+  .chat-container {
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .chat-header {
+    border-radius: 0;
+  }
+  .messages {
+    padding: 24px 20px;
+    gap: 20px;
+  }
+  .message {
+    max-width: 85%;
+  }
 }
