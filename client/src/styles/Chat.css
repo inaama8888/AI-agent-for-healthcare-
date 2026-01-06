@@ -1,13 +1,12 @@
 /* =================================================
-   ZAHAVA CHAT – FINAL PRODUCTION CSS
-   Mindfulness / Therapy Chat
-   RTL • Proportions like LOCAL • Stable
+   ZAHAVA CHAT – FINAL PERFECT CSS (Identical to Local)
+   RTL Fixed, Full Height, Beautiful Proportions
    ================================================= */
 
 /* ===== Variables ===== */
 :root {
   --bg-app: #eef2f6;
-  --bg-canvas: #f7f9fb;
+  --bg-canvas: #f9fbfd;
 
   --header-gradient: linear-gradient(135deg, #7f8fe6, #6fa3d8);
 
@@ -24,7 +23,7 @@
   --radius-sm: 8px;
 }
 
-/* ===== Reset ===== */
+/* ===== Global Reset & RTL ===== */
 *,
 *::before,
 *::after {
@@ -33,49 +32,55 @@
 
 html {
   direction: rtl;
+  height: 100%;
 }
 
-html,
 body {
   margin: 0;
   height: 100%;
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   background: var(--bg-app);
   color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ===== App shell ===== */
+/* ===== App shell – Full screen like local ===== */
 .app-shell {
-  min-height: 100vh;
-  background: radial-gradient(
-    circle at top,
-    #f4f7fb 0%,
-    #e9eef5 45%,
-    #dfe5ec 100%
-  );
+  height: 100vh;
+  height: 100dvh;
+  width: 100vw;
+  padding: 0;
+  margin: 0;
+  background: var(--bg-app);
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 24px;
+  align-items: flex-start;
+  overflow: hidden;
 }
 
-/* ===== Chat container ===== */
+/* ===== Chat container – Full height, responsive ===== */
 .chat-container {
-  width: 100%;
-  max-width: 880px;
-  height: min(92vh, 880px);
-
-  background: #f9fbfd;
-  border-radius: 32px;
-
-  box-shadow:
-    0 40px 90px rgba(0, 0, 0, 0.18),
-    0 12px 30px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255,255,255,0.7);
-
+  width: min(96vw, 920px);
+  height: 100vh;
+  height: 100dvh;
+  background: var(--bg-canvas);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* Desktop: beautiful card with shadow and radius */
+@media (min-width: 769px) {
+  .chat-container {
+    margin: 20px;
+    height: calc(100vh - 40px);
+    border-radius: 32px;
+    box-shadow:
+      0 40px 90px rgba(0, 0, 0, 0.18),
+      0 12px 30px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255,255,255,0.7);
+  }
 }
 
 /* ===== Header ===== */
@@ -86,20 +91,17 @@ body {
   text-align: center;
   font-size: 18px;
   font-weight: 600;
+  border-radius: 32px 32px 0 0; /* Only on desktop */
 }
 
-/* =================================================
-   Messages area – EXACT like local
-   ================================================= */
+/* ===== Messages area ===== */
 .messages {
   flex: 1;
-  padding: 32px 40px; /* מרווחים גדולים ונדיבים כמו בלוקלי */
+  padding: 28px 32px;
   overflow-y: auto;
-
   display: flex;
   flex-direction: column;
-  gap: 20px;
-
+  gap: 24px;
   scroll-behavior: smooth;
 }
 
@@ -108,134 +110,64 @@ body {
   max-width: 72%;
   padding: 16px 20px;
   border-radius: var(--radius-xl);
-  font-size: 15.5px; /* קצת גדול יותר – כמו בלוקלי */
+  font-size: 15.5px;
   line-height: 1.65;
   position: relative;
-
   box-shadow: 0 8px 24px rgba(0,0,0,0.09);
-  animation: fadeUp 0.25s ease;
+  animation: fadeUp 0.3s ease;
 }
 
-/* =================================================
-   BOT MESSAGE (Left in RTL)
-   ================================================= */
+/* ===== Bot message ===== */
 .message.bot {
-  align-self: end;               /* שמאל ב-RTL */
+  align-self: end;                    /* Left in RTL */
   margin-inline-start: auto;
   margin-inline-end: 0;
-
   background: var(--bot-bg);
-  border-top-right-radius: var(--radius-sm);
+  border-top-right-radius: var(--radius-sm); /* Tail effect */
 }
 
-/* זנב לבוט – מצביע שמאלה */
+/* Bot tail (pointing left) */
 .message.bot::before {
   content: "";
   position: absolute;
   bottom: 0;
   left: -6px;
-
   width: 14px;
   height: 14px;
   background: var(--bot-bg);
-
   border-bottom-right-radius: 50%;
   transform: rotate(45deg);
   box-shadow: 3px 3px 6px rgba(0,0,0,0.06);
+  z-index: 1;
 }
 
-/* =================================================
-   USER MESSAGE (Right in RTL)
-   ================================================= */
+/* ===== User message ===== */
 .message.user {
-  align-self: start;             /* ימין ב-RTL */
+  align-self: start;                  /* Right in RTL */
   margin-inline-start: 0;
   margin-inline-end: auto;
-
   background: var(--user-bg);
   border-top-left-radius: var(--radius-sm);
 }
 
-/* זנב למשתמש – מצביע ימינה */
+/* User tail (pointing right) */
 .message.user::before {
   content: "";
   position: absolute;
   bottom: 0;
   right: -6px;
-
   width: 14px;
   height: 14px;
   background: var(--user-bg);
-
   border-bottom-left-radius: 50%;
   transform: rotate(-45deg);
   box-shadow: -3px 3px 6px rgba(0,0,0,0.06);
+  z-index: 1;
 }
 
-/* ===== Meta text ===== */
-.message .meta {
-  display: block;
-  margin-top: 6px;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-/* ===== Choice chips ===== */
-.choices {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.choice-chip {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 999px;
-  padding: 10px 18px;
-  font-size: 14px;
-  cursor: pointer;
-
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  transition: all 0.2s ease;
-}
-
-.choice-chip:hover {
-  background: var(--accent);
-  color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-}
-
-/* ===== Typing indicator ===== */
-.typing {
-  align-self: end;
-  margin-inline-start: auto;
-  margin-inline-end: 0;
-
-  padding: 14px 18px;
-  background: var(--bot-bg);
-  border-radius: var(--radius-lg);
-
-  display: flex;
-  gap: 6px;
-}
-
-.typing span {
-  width: 6px;
-  height: 6px;
-  background: #9ca3af;
-  border-radius: 50%;
-  animation: blink 1.4s infinite both;
-}
-
-.typing span:nth-child(2) { animation-delay: 0.2s; }
-.typing span:nth-child(3) { animation-delay: 0.4s; }
-
-/* ===== Input ===== */
+/* ===== Input box ===== */
 .input-box {
   padding: 16px 20px 22px;
-  background: #f9fbfd;
 }
 
 .input-inner {
@@ -243,16 +175,15 @@ body {
   gap: 12px;
   background: #ffffff;
   border-radius: 999px;
-  padding: 10px 14px;
-
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 12px 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .input-inner input {
   flex: 1;
   border: none;
-  font-size: 15px;
   outline: none;
+  font-size: 15.5px;
   background: transparent;
 }
 
@@ -262,52 +193,34 @@ body {
   border-radius: 50%;
   border: none;
   background: var(--accent);
-  color: #ffffff;
+  color: white;
   font-size: 18px;
   cursor: pointer;
-
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .send-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.18);
 }
 
 /* ===== Animations ===== */
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
 }
 
-@keyframes blink {
-  0% { opacity: 0.2; }
-  20% { opacity: 1; }
-  100% { opacity: 0.2; }
-}
-
-/* ===== Mobile ===== */
+/* ===== Mobile optimizations ===== */
 @media (max-width: 768px) {
-  .app-shell {
-    padding: 0;
-  }
-
-  .chat-container {
-    height: 100vh;
-    max-width: 100%;
+  .chat-header {
     border-radius: 0;
   }
-
+  
   .messages {
-    padding: 24px 16px;
+    padding: 20px 16px;
+    gap: 20px;
   }
-
+  
   .message {
     max-width: 85%;
   }
