@@ -228,20 +228,10 @@ app.get("/api/lessons", async (req, res) => {
    ROUTES נוספים
 ================================ */
 app.use("/api/faq", require("./routes/faqRoute"));
+app.use("/api/lessons", require("./routes/nearbyLessonsRoute"));
 app.use("/api/emotional-support", require("./routes/emotionalSupportRoute"));
 const path = require("path");
 // only prod
-
-app.use(express.static(path.join(__dirname, "client", "build")));
-
-app.get("*", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "client", "build", "index.html")
-  );
-});
-
-
-
 app.get("/api/approve", async (req, res) => {
   const { token } = req.query;
 
@@ -309,6 +299,17 @@ app.get("/api/reject", async (req, res) => {
 
   res.send("❌ הבקשה נדחתה");
 });
+app.use(express.static(path.join(__dirname, "client", "build")));
+
+app.get("*", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "client", "build", "index.html")
+  );
+});
+
+
+
+
 
 /* ================================
    START SERVER
@@ -321,6 +322,6 @@ app.listen(PORT, () => {
 
 
 
-app.use("/api/lessons", require("./routes/nearbyLessonsRoute"));
+
 
 
