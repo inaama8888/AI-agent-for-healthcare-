@@ -543,7 +543,6 @@ const handleEmotionalSupport = async () => {
 const goBack = () => {
   sendBot("חזרה אחורה 🔙");
 
-  // מיפוי פשוט של שלבים לאחור
   const backMap = {
    search_city: "search_menu",
   search_topic: "search_menu",
