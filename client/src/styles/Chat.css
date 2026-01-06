@@ -45,22 +45,32 @@ body {
 /* ===== App shell ===== */
 .app-shell {
   min-height: 100vh;
+  background: radial-gradient(
+    circle at top,
+    #f4f7fb 0%,
+    #e9eef5 45%,
+    #dfe5ec 100%
+  );
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 32px;
+  padding: 24px;
 }
-
 /* ===== Chat container ===== */
 .chat-container {
   width: 100%;
-  max-width: 900px;
-  height: min(90vh, 900px);
+  max-width: 880px;
+  height: min(92vh, 880px);
+  background: #f9fbfd;
+  border-radius: 32px;
+
+  box-shadow:
+    0 40px 90px rgba(0, 0, 0, 0.18),
+    0 12px 30px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255,255,255,0.7);
+
   display: flex;
   flex-direction: column;
-  background: var(--bg-canvas);
-  border-radius: 24px;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.12);
   overflow: hidden;
 }
 
@@ -104,11 +114,15 @@ body {
 
 /* ===== Bot message ===== */
 .message.bot {
-  align-self: flex-end;
-  background: var(--bot-bg);
-  border-top-right-radius: 8px;
-  max-width: 420px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
+  box-shadow:
+    0 12px 28px rgba(0,0,0,0.10);
+}
+
+.message.user {
+  background: #e7efff;
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.08);
 }
 
 .message.bot::after {
