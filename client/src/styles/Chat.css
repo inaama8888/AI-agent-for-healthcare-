@@ -1,6 +1,6 @@
 /* =================================================
-   ZAHAVA CHAT – FINAL CSS
-   Pixel-tuned to match Localhost
+   ZAHAVA CHAT – FINAL CSS (DESKTOP + MOBILE FIXED)
+   RTL • Stable • No White Gaps
    ================================================= */
 
 /* ===== Root ===== */
@@ -45,7 +45,6 @@ body {
   background: var(--bg-app);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 /* =================================================
@@ -66,12 +65,12 @@ body {
 }
 
 /* =================================================
-   Chat container – tuned proportions
+   Chat container – DESKTOP
    ================================================= */
 .chat-container {
   flex: 1;
-  max-width: 780px;          /* צר יותר = מרגיש גבוה יותר */
-  margin: 16px auto;         /* פחות רווח חיצוני */
+  max-width: 720px;
+  margin: 16px auto;
 
   display: flex;
   flex-direction: column;
@@ -87,24 +86,23 @@ body {
 
 /* ===== Header ===== */
 .chat-header {
-  flex: 0 0 auto;
-  padding: 14px 24px;        /* טיפה נמוך יותר */
+  padding: 12px 24px;
   background: var(--header-gradient);
   color: #fff;
   text-align: center;
-  font-size: 17.5px;
+  font-size: 16.5px;
   font-weight: 600;
 }
 
 /* =================================================
-   Messages area – vertical density like local
+   Messages
    ================================================= */
 .messages {
-  flex: 1 1 auto;
-  min-height: 0;             /* חובה לגלילה תקינה */
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
 
-  padding: 12px 40px 16px;   /* פחות רווח למעלה */
+  padding: 12px 32px 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -112,115 +110,37 @@ body {
   scroll-behavior: smooth;
 }
 
-/* ===== Message base ===== */
+/* ===== Message ===== */
 .message {
   max-width: 72%;
-  padding: 15px 18px;        /* טיפה פחות גבוה */
+  padding: 13px 16px;
   border-radius: var(--radius-xl);
-  font-size: 15.5px;
-  line-height: 1.65;
+  font-size: 14.8px;
+  line-height: 1.6;
   position: relative;
 
   box-shadow: 0 8px 22px rgba(0,0,0,0.09);
-  animation: fadeUp 0.25s ease;
 }
 
-/* =================================================
-   BOT MESSAGE – שמאל ב-RTL
-   ================================================= */
+/* Bot */
 .message.bot {
-  align-self: end;
-  margin-inline-start: auto;
-  margin-inline-end: 0;
-
+  align-self: flex-end;
   background: var(--bot-bg);
   border-top-right-radius: var(--radius-sm);
 }
 
-/* זנב לבוט */
-.message.bot::before {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: -6px;
-
-  width: 14px;
-  height: 14px;
-  background: var(--bot-bg);
-
-  border-bottom-right-radius: 50%;
-  transform: rotate(45deg);
-  box-shadow: 3px 3px 6px rgba(0,0,0,0.06);
-}
-
-/* =================================================
-   USER MESSAGE – ימין ב-RTL
-   ================================================= */
+/* User */
 .message.user {
-  align-self: start;
-  margin-inline-start: 0;
-  margin-inline-end: auto;
-
+  align-self: flex-start;
   background: var(--user-bg);
   border-top-left-radius: var(--radius-sm);
 }
 
-/* זנב למשתמש */
-.message.user::before {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  right: -6px;
-
-  width: 14px;
-  height: 14px;
-  background: var(--user-bg);
-
-  border-bottom-left-radius: 50%;
-  transform: rotate(-45deg);
-  box-shadow: -3px 3px 6px rgba(0,0,0,0.06);
-}
-
-/* ===== Meta text ===== */
-.message .meta {
-  margin-top: 6px;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
 /* =================================================
-   Typing indicator
-   ================================================= */
-.typing {
-  align-self: end;
-  margin-inline-start: auto;
-  margin-inline-end: 0;
-
-  padding: 13px 16px;
-  background: var(--bot-bg);
-  border-radius: var(--radius-lg);
-
-  display: flex;
-  gap: 6px;
-}
-
-.typing span {
-  width: 6px;
-  height: 6px;
-  background: #9ca3af;
-  border-radius: 50%;
-  animation: blink 1.4s infinite both;
-}
-
-.typing span:nth-child(2) { animation-delay: 0.2s; }
-.typing span:nth-child(3) { animation-delay: 0.4s; }
-
-/* =================================================
-   Input area – anchored & connected
+   Input
    ================================================= */
 .input-box {
-  flex: 0 0 auto;
-  padding: 6px 20px;
+  padding: 6px 16px;
   background: var(--bg-chat);
   box-shadow: inset 0 1px 0 rgba(0,0,0,0.04);
 }
@@ -231,66 +151,50 @@ body {
   background: #fff;
   border-radius: 999px;
   padding: 10px 14px;
-
-  box-shadow: 0 8px 22px rgba(0,0,0,0.08);
 }
 
 .input-inner input {
   flex: 1;
   border: none;
-  font-size: 15px;
+  font-size: 14.8px;
   outline: none;
   background: transparent;
 }
 
 .send-btn {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   border: none;
   background: var(--accent);
   color: #fff;
   font-size: 18px;
   cursor: pointer;
-
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.send-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 18px rgba(0,0,0,0.18);
-}
-
-/* ===== Animations ===== */
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes blink {
-  0% { opacity: 0.2; }
-  20% { opacity: 1; }
-  100% { opacity: 0.2; }
 }
 
 /* =================================================
-   Mobile
+   MOBILE – FULL SCREEN, NO GAPS
    ================================================= */
 @media (max-width: 768px) {
+
+  .app-shell {
+    background: #ffffff;
+  }
+
   .chat-container {
+    max-width: 100%;
     margin: 0;
     border-radius: 0;
-    max-width: 100%;
+    box-shadow: none;
+  }
+
+  .chat-header {
+    border-radius: 0;
+    width: 100%;
   }
 
   .messages {
-    padding: 12px 16px;
+    padding: 10px 14px;
   }
 
   .message {
