@@ -1,18 +1,7 @@
 /* =================================================
-   ZAHAVA CHAT – FINAL CSS (DESKTOP + MOBILE FIXED)
-   RTL • Stable • No White Gaps
+   ZAHAVA CHAT – EXACTLY LIKE YOUR PERFECT LOCAL
+   צר, ממורכז, מרווחים עדינים, צל יפה
    ================================================= */
-
-/* ===== Root ===== */
-html, body, #root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  direction: rtl;
-}
 
 /* ===== Variables ===== */
 :root {
@@ -24,212 +13,153 @@ html {
   --bot-bg: #ffffff;
   --user-bg: #e7efff;
 
-  --text-main: #1f2937;
-  --text-muted: #6b7280;
   --accent: #6f8fe6;
 
   --radius-xl: 26px;
-  --radius-lg: 20px;
   --radius-sm: 8px;
 }
 
-/* ===== Global reset ===== */
-*,
-*::before,
-*::after {
+/* ===== Global ===== */
+*, *::before, *::after {
   box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  direction: rtl;
 }
 
 body {
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   background: var(--bg-app);
-  color: var(--text-main);
   -webkit-font-smoothing: antialiased;
 }
 
-/* =================================================
-   App shell
-   ================================================= */
+/* ===== App shell – ממורכז עם מרווח ===== */
 .app-shell {
-  height: 100%;
+  min-height: 100vh;
+  background: var(--bg-app);
   display: flex;
   justify-content: center;
-  align-items: stretch;
-
-  background: radial-gradient(
-    circle at top,
-    #f4f7fb 0%,
-    #e9eef5 45%,
-    #dfe5ec 100%
-  );
+  align-items: center;
+  padding: 32px;                     /* מרווח מסביב – בדיוק כמו בלוקלי */
 }
 
-/* =================================================
-   Chat container – DESKTOP
-   ================================================= */
+/* ===== Chat container – צר וממורכז כמו בלוקלי ===== */
 .chat-container {
-  flex: 1;
-  max-width: 720px;
-  margin: 16px auto;
-
-  display: flex;
-  flex-direction: column;
-
+  width: 100%;
+  max-width: 780px;                  /* צר – בדיוק כמו בתמונה של הלוקלי */
+  height: min(90vh, 860px);          /* גבוה אבל לא מלא – מרווח למעלה/למטה */
   background: var(--bg-chat);
   border-radius: 32px;
-  overflow: hidden;
-
   box-shadow:
-    0 36px 80px rgba(0,0,0,0.18),
-    0 10px 24px rgba(0,0,0,0.08);
+    0 40px 90px rgba(0, 0, 0, 0.18),
+    0 12px 30px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255,255,255,0.7);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* ===== Header ===== */
 .chat-header {
-  padding: 12px 24px;
   background: var(--header-gradient);
-  color: #fff;
+  color: #ffffff;
+  padding: 16px 24px;
   text-align: center;
-  font-size: 16.5px;
+  font-size: 18px;
   font-weight: 600;
 }
 
-/* =================================================
-   Messages
-   ================================================= */
+/* ===== Messages ===== */
 .messages {
   flex: 1;
-  min-height: 0;
+  padding: 32px 40px;
   overflow-y: auto;
-
-  padding: 12px 32px 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-
+  gap: 24px;
   scroll-behavior: smooth;
 }
 
 /* ===== Message ===== */
 .message {
-  max-width: 72%;
-  padding: 13px 16px;
+  max-width: 70%;
+  padding: 16px 20px;
   border-radius: var(--radius-xl);
-  font-size: 14.8px;
-  line-height: 1.6;
+  font-size: 15.5px;
+  line-height: 1.65;
   position: relative;
-
-  box-shadow: 0 8px 22px rgba(0,0,0,0.09);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.09);
 }
 
-/* Bot */
+/* Bot – שמאל */
 .message.bot {
   align-self: flex-end;
   background: var(--bot-bg);
   border-top-right-radius: var(--radius-sm);
 }
 
-/* User */
+/* User – ימין */
 .message.user {
   align-self: flex-start;
   background: var(--user-bg);
   border-top-left-radius: var(--radius-sm);
 }
 
-/* =================================================
-   Input
-   ================================================= */
+/* ===== Input ===== */
 .input-box {
-  padding: 6px 16px;
-  background: var(--bg-chat);
-  box-shadow: inset 0 1px 0 rgba(0,0,0,0.04);
+  padding: 20px 30px 30px;
 }
 
 .input-inner {
   display: flex;
-  gap: 12px;
-  background: #fff;
+  gap: 14px;
+  background: #ffffff;
   border-radius: 999px;
-  padding: 10px 14px;
+  padding: 14px 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .input-inner input {
   flex: 1;
   border: none;
-  font-size: 14.8px;
   outline: none;
+  font-size: 15.5px;
   background: transparent;
 }
 
 .send-btn {
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  border: none;
   background: var(--accent);
-  color: #fff;
-  font-size: 18px;
+  color: white;
+  border: none;
+  font-size: 20px;
   cursor: pointer;
 }
 
-/* =========================================
-   PRODUCTION HEIGHT FIX (CRITICAL)
-   ========================================= */
-
-/* כל האפליקציה חייבת להיות מחוברת ל־viewport */
-.app-shell {
-  min-height: 100vh;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-}
-
-/* הצ'אט עצמו – גובה מלא */
-.chat-container {
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* אזור ההודעות חייב "לגדול" */
-.messages {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-/* הקלט תמיד למטה */
-.input-box {
-  flex-shrink: 0;
-}
-
-/* =================================================
-   MOBILE – FULL SCREEN, NO GAPS
-   ================================================= */
+/* ===== Mobile ===== */
 @media (max-width: 768px) {
-
   .app-shell {
-    background: #ffffff;
+    padding: 0;
   }
-
   .chat-container {
+    height: 100vh;
     max-width: 100%;
-    margin: 0;
     border-radius: 0;
     box-shadow: none;
   }
-
-  .chat-header {
-    border-radius: 0;
-    width: 100%;
-  }
-
   .messages {
-    padding: 10px 14px;
+    padding: 24px 20px;
+    gap: 20px;
   }
-
   .message {
     max-width: 85%;
   }
