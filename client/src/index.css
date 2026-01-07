@@ -1,4 +1,6 @@
-/* index.css – Global Styles for Zahava Chat (RTL Fixed & Production Ready) */
+/* =================================================
+   index.css – Global Styles (Bullet-Proof)
+   ================================================= */
 
 html,
 body,
@@ -9,26 +11,27 @@ body,
 }
 
 html {
-  direction: rtl; /* חובה – מבטיח RTL גלובלי */
+  direction: rtl; /* RTL גלובלי */
 }
 
 body {
-  margin: 0;
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
-  direction: rtl;
-  background: #eef2f6; /* --bg-app */
-  color: #1f2937; /* --text-main */
+  background: #eef2f6; /* bg-app */
+  color: #1f2937;
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  /* ❌ לא מיישרים כאן */
+  display: block;
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ודא שה-app-shell מקבל את כל הגובה */
-#root > div {
+/* root חייב למלא גובה */
+#root {
   height: 100%;
-  width: 100%;
+}
+
+/* האפליקציה עצמה אחראית על layout */
+#root > * {
+  height: 100%;
 }
