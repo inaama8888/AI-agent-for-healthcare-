@@ -172,6 +172,39 @@ body {
   cursor: pointer;
 }
 
+/* =========================================
+   PRODUCTION HEIGHT FIX (CRITICAL)
+   ========================================= */
+
+/* כל האפליקציה חייבת להיות מחוברת ל־viewport */
+.app-shell {
+  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+
+/* הצ'אט עצמו – גובה מלא */
+.chat-container {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* אזור ההודעות חייב "לגדול" */
+.messages {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* הקלט תמיד למטה */
+.input-box {
+  flex-shrink: 0;
+}
+
 /* =================================================
    MOBILE – FULL SCREEN, NO GAPS
    ================================================= */
