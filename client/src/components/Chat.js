@@ -400,6 +400,19 @@ setStep("after_register");
   const handleFAQ = async () => {
   const text = mainInput.trim();
 
+  // ❌ לא מספר בכלל
+if (!/^\d+$/.test(text)) {
+  sendBot("כאן צריך לבחור מספר 🌿");
+  sendBot(
+    "אפשר לבחור:\n" +
+    "1️⃣ שאלות על שיעורים\n" +
+    "2️⃣ שאלות על העמותה\n" +
+    "3️⃣ שאלות על המנחים\n\n" +
+    "0️⃣ חזרה לתפריט הראשי"
+  );
+  return;
+}
+
   if (faqMode === "choose") {
     if (text === "0") return showMainMenu();
 
@@ -541,59 +554,59 @@ const handleEmotionalSupport = async () => {
 };
 
 const goBack = () => {
-  sendBot("חזרה אחורה 🔙");
-
-  // מיפוי פשוט של שלבים לאחור
   const backMap = {
-   search_city: "search_menu",
-  search_topic: "search_menu",
-  search_instructor: "search_menu",
-  register: "search_menu",
-  emotional: "main_menu",
-  after_register: "main_menu",
+    search_city: "search_menu",
+    search_topic: "search_menu",
+    search_instructor: "search_menu",
+    register: "search_menu",
+
+    search_menu: "main_menu",
+    faq: "main_menu",
+    emotional: "main_menu",
+    after_register: "main_menu",
   };
 
   const prev = backMap[step] || "main_menu";
+
+  sendBot("🔙 חזרנו אחורה");
+
   setStep(prev);
 
-  if (prev === "main_menu") showMainMenu();
-  else if (prev === "choose_search_method") {
-    sendBot("כיצד תרצה לחפש שיעור?");
-    sendBot(["1️⃣  כל השיעורים", "2️⃣  לפי עיר", "3️⃣ לפי נושא", "4️⃣  חזרה"].join("\n"));
+  if (prev === "main_menu") {
+    showMainMenu();
+  }
+
+  if (prev === "search_menu") {
+    showSearchMenu();
   }
 };
+
 
 const handleSend = () => {
   if (!mainInput.trim()) return;
 
   const text = mainInput.trim();
   sendUser(text);
+  setMainInput("");
 
-  const blockedSteps = ["ask_name", "ask_reason", "done"];
-
-if (!blockedSteps.includes(step)) {
+  // 🔥 תמיד תופס קודם
   if (text === "0") {
-    setMainInput("");
     return goHome();
   }
 
   if (text === "9") {
-    setMainInput("");
     return goBack();
   }
-}
 
-  const currentStep = step;
-
-  if (handlers[currentStep]) {
-    handlers[currentStep](text);
+  const handler = handlers[step];
+  if (handler) {
+    handler(text);
   } else {
     sendBot("משהו השתבש, חוזרים לתפריט");
-   // showMainMenu();
+    showMainMenu();
   }
-
-  setMainInput("");
 };
+
 useEffect(() => {
   endRef.current?.scrollIntoView({ behavior: "smooth" });
 }, [mainMessages]);

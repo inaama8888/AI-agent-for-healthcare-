@@ -86,12 +86,27 @@ console.log("🧠 LESSONS TEXT SENT TO AI:\n", lessonsText);
 
 
       console.log("🧠 Prompt built");
-
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: lessonsText + "\n\nשאלה:\n" + question }],
-        temperature: 0.2,
-      });
+const completion = await openai.chat.completions.create({
+  model: "gpt-4o-mini",
+  messages: [
+    {
+      role: "system",
+      content: `
+אתה עוזר שעונה אך ורק על סמך המידע שסופק לך.
+המידע היחיד שמותר לך להשתמש בו הוא פרטי השיעורים המופיעים למטה.
+אסור לך להשתמש בידע כללי או חיצוני.
+אם השאלה אינה קשורה ישירות למידע על השיעורים – עליך לענות:
+"לא נמצא מידע על כך במסגרת השיעורים המופיעים במערכת."
+אסור לך לנחש, להרחיב או להמציא מידע.
+`
+    },
+    {
+      role: "user",
+      content: lessonsText + "\n\nשאלה:\n" + question
+    }
+  ],
+  temperature: 0
+});
 
       console.log("🤖 OpenAI RESPONSE:", completion.choices[0].message.content);
 
