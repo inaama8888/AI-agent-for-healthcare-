@@ -196,6 +196,8 @@ body {
     padding: 0;
   }
   .chat-container {
+        margin-top: 0;
+
 height: calc(var(--vh, 1vh) * 100);
     max-width: 100%;
     border-radius: 0;
@@ -210,6 +212,6 @@ height: calc(var(--vh, 1vh) * 100);
   }
 
   .app-shell {
-  align-items: stretch;
+  align-items: flex-start;
 }
 }
