@@ -2,7 +2,10 @@
    ZAHAVA CHAT – EXACTLY LIKE YOUR PERFECT LOCAL
    צר, ממורכז, מרווחים עדינים, צל יפה
    ================================================= */
-
+html, body {
+  height: 100%;
+  overflow: hidden;   /* ⛔ חוסם גלילה של כל המסך */
+}
 /* ===== Variables ===== */
 :root {
   --bg-app: #eef2f6;
@@ -79,6 +82,8 @@ body {
 /* ===== Messages ===== */
 .messages {
   flex: 1;
+    overscroll-behavior: none;
+
   padding: 32px 40px;
   overflow-y: auto;
   display: flex;
@@ -184,6 +189,9 @@ body {
 
 /* ===== Mobile ===== */
 @media (max-width: 768px) {
+    body {
+    overscroll-behavior: none;
+  }
   .app-shell {
     padding: 0;
   }
