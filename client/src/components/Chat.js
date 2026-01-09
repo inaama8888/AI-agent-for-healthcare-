@@ -403,23 +403,22 @@ setStep("after_register");
     setStep("faq");
   };
 
-  const handleFAQ = async () => {
+const handleFAQ = async () => {
   const text = mainInput.trim();
 
-  // ❌ לא מספר בכלל
-if (!/^\d+$/.test(text)) {
-  sendBot("כאן צריך לבחור מספר 🌿");
-  sendBot(
-    "אפשר לבחור:\n" +
-    "1️⃣ שאלות על שיעורים\n" +
-    "2️⃣ שאלות על העמותה\n" +
-    "3️⃣ שאלות על המנחים\n\n" +
-    "0️⃣ חזרה לתפריט הראשי"
-  );
-  return;
-}
-
+  // ===== שלב בחירת נושא =====
   if (faqMode === "choose") {
+    if (!/^\d+$/.test(text)) {
+      sendBot("כאן צריך לבחור מספר 🌿");
+      sendBot(
+        "1️⃣ שאלות על שיעורים\n" +
+        "2️⃣ שאלות על העמותה\n" +
+        "3️⃣ שאלות על המנחים\n\n" +
+        "0️⃣ חזרה לתפריט הראשי"
+      );
+      return;
+    }
+
     if (text === "0") return showMainMenu();
 
     if (text === "1") {
@@ -437,27 +436,41 @@ if (!/^\d+$/.test(text)) {
     if (text === "2") {
       setFaqType("ORG");
       setFaqMode("ask");
-      return sendBot("שאלי כל שאלה על העמותה 🌱");
+      sendBot("שאלי כל שאלה על העמותה 🌱");
+      return;
     }
 
     if (text === "3") {
       setFaqType("INSTRUCTORS");
       setFaqMode("ask");
-      return sendBot("שאלי כל שאלה על המנחים 💙");
+      sendBot("שאלי כל שאלה על המנחים 💙");
+      sendBot("לדוגמה: מה ההכשרה של המנחים?");
+      return;
     }
+
+    sendBot("בחירה לא תקינה.");
+    return;
   }
 
+  // ===== שלב בחירת שיעור =====
   if (faqMode === "chooseLesson") {
+    if (!/^\d+$/.test(text)) {
+      return sendBot("נא לבחור מספר שיעור תקין");
+    }
+
     const lesson = lessons[Number(text) - 1];
-    if (!lesson) return sendBot("בחירה לא תקינה. הזן מספר תקין");
+    if (!lesson) return sendBot("בחירה לא תקינה.");
+
     setFaqSelectedLesson(lesson);
     setFaqMode("ask");
-    return sendBot(`איזו שאלה יש לך על "${lesson.title}"?`);
+    sendBot(`איזו שאלה יש לך על "${lesson.title}"?`);
+    return;
   }
 
+  // ===== שלב שאלה חופשית (ChatGPT) =====
   if (faqMode === "ask") {
     try {
-      setIsTyping(true); // 👈 כאן מתחיל "זהבה מקלידה…"
+      setIsTyping(true);
 
       const res = await axios.post("/api/faq", {
         type: faqType,
@@ -465,7 +478,7 @@ if (!/^\d+$/.test(text)) {
         lesson: faqSelectedLesson,
       });
 
-      setIsTyping(false); // 👈 נגמר
+      setIsTyping(false);
       sendBot(res.data.answer);
       showMainMenu();
     } catch (err) {
@@ -474,6 +487,7 @@ if (!/^\d+$/.test(text)) {
     }
   }
 };
+
 
   /* ========= EMOTIONAL ========= */
 const handleEmotionalSupport = async () => {

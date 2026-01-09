@@ -122,10 +122,26 @@ const completion = await openai.chat.completions.create({
       console.log("🌱 ENTERED ORG / INSTRUCTORS FLOW");
 
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: contextText + "\n\nשאלה:\n" + question }],
-        temperature: 0.2,
-      });
+  model: "gpt-4o-mini",
+  messages: [
+    {
+      role: "system",
+      content: `
+אתה עוזר שעונה אך ורק על סמך המידע שסופק לך.
+המידע היחיד שמותר לך להשתמש בו הוא הטקסט שמופיע למטה.
+אסור לך להשתמש בידע כללי, ידע קודם או הנחות.
+אם השאלה אינה נענית במפורש מהטקסט – עליך להשיב:
+"אין לי מידע על כך."
+אין להמציא מנחים, שמות, פרטים ביוגרפיים או ניסיון אישי.
+`
+    },
+    {
+      role: "user",
+      content: contextText + "\n\nשאלה:\n" + question
+    }
+  ],
+  temperature: 0
+});
 
       console.log("🤖 OpenAI RESPONSE:", completion.choices[0].message.content);
 
