@@ -38,10 +38,10 @@ const endRef = useRef(null);
   const [faqSelectedLesson, setFaqSelectedLesson] = useState(null);
 
   /* ========= HELPERS ========= */
-const sendBot = (text, type = "normal") =>
+const sendBot = (text, type = "normal", isHtml = false) =>
   setMainMessages((prev) => [
     ...prev,
-    { sender: "bot", text, type },
+    { sender: "bot", text, type, isHtml },
   ]);
 
   const sendUser = (text) =>
@@ -104,7 +104,7 @@ setStep("ask_phone");
   
   /* ========= MENUS ========= */
   const showMainMenu = () => {
-    sendBot("בחר פעולה:");
+sendBot("איך תרצה להמשיך מכאן? 🌱");
     sendBot(
       "1️⃣ הרשמה לשיעור\n2️⃣ שאלות ותשובות\n3️⃣ תמיכה רגשית"
     );
@@ -358,12 +358,18 @@ sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
     sendBot(`נרשמת לשיעור: ${lesson.title} `);
 const calendarLink = createGoogleCalendarLink(lesson);
 
-sendBot(`
-📅 להוספת תזכורת ליומן<br/>
-<a href="${calendarLink}" target="_blank" class="calendar-btn">
-  ➕ הוספה ליומן Google
-</a>
-`);
+sendBot(
+  `
+  <div class="calendar-wrapper">
+    <div class="calendar-title">📅 הוספת תזכורת ליומן</div>
+    <a href="${calendarLink}" target="_blank" class="calendar-btn">
+      ➕ הוספה ליומן Google
+    </a>
+  </div>
+  `,
+  "normal",
+  true
+);
 
 sendBot("1️⃣ חזרה לתפריט\n2️⃣ חיפוש נוסף");
 setStep("after_register");
@@ -619,36 +625,43 @@ return (
       </div>
 
       <div className="messages">
-        {mainMessages.map((m, i) => (
-          <div key={i} className={`message ${m.sender}`}>
-            {m.text}
+  {mainMessages.map((m, i) => (
+    <div key={i} className={`message ${m.sender}`}>
+      
+      {/* תוכן ההודעה */}
+      {m.isHtml ? (
+        <div
+          className="message-html"
+          dangerouslySetInnerHTML={{ __html: m.text }}
+        />
+      ) : (
+        <div className="message-text">
+          {m.text}
+        </div>
+      )}
 
-            {m.choices && (
-              <div className="choices">
-                {m.choices.map((c, idx) => (
-                  <div
-                    key={idx}
-                    className="choice-chip"
-                   // onClick={() => handleChoice(c.value)}
-                  >
-                    {c.label}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+      {/* בחירות (אם יש) */}
+      {m.choices && (
+        <div className="choices">
+          {m.choices.map((c, idx) => (
+            <div
+              key={idx}
+              className="choice-chip"
+              // בעתיד אפשר להחזיר:
+              // onClick={() => handleChoice(c.value)}
+            >
+              {c.label}
+            </div>
+          ))}
+        </div>
+      )}
 
-        {/* {isTyping && (
-          <div className="typing">
-            <span />
-            <span />
-            <span />
-          </div>
-        )} */}
+    </div>
+  ))}
 
-        <div ref={endRef} />
-      </div>
+  <div ref={endRef} />
+</div>
+
  {isTyping && (
     <div className="message bot typing">
       <span />
