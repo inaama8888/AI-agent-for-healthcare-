@@ -1,11 +1,19 @@
 /* =================================================
-   ZAHAVA CHAT – EXACTLY LIKE YOUR PERFECT LOCAL
-   צר, ממורכז, מרווחים עדינים, צל יפה
+   ZAHAVA CHAT – FINAL STABLE PWA CSS
+   Mobile-first, No scroll bugs, Safe-area ready
    ================================================= */
+
+/* ===== Global scroll lock ===== */
 html, body {
   height: 100%;
-  overflow: hidden;   /* ⛔ חוסם גלילה של כל המסך */
+  margin: 0;
+  overflow: hidden; /* ⛔ אין גלילה כללית */
 }
+
+#root {
+  height: 100%;
+}
+
 /* ===== Variables ===== */
 :root {
   --bg-app: #eef2f6;
@@ -22,15 +30,9 @@ html, body {
   --radius-sm: 8px;
 }
 
-/* ===== Global ===== */
+/* ===== Reset ===== */
 *, *::before, *::after {
   box-sizing: border-box;
-}
-
-html, body, #root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
 }
 
 html {
@@ -43,83 +45,123 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ===== App shell – ממורכז עם מרווח ===== */
+/* =================================================
+   APP SHELL
+   ================================================= */
 .app-shell {
-  min-height: 100vh;
+  height: 100%;
   background: var(--bg-app);
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 32px;                     /* מרווח מסביב – בדיוק כמו בלוקלי */
+  padding: 32px;
 }
 
-/* ===== Chat container – צר וממורכז כמו בלוקלי ===== */
+/* =================================================
+   CHAT CONTAINER
+   ================================================= */
 .chat-container {
   width: 100%;
-  max-width: 780px;                  /* צר – בדיוק כמו בתמונה של הלוקלי */
-  height: min(90vh, 860px);          /* גבוה אבל לא מלא – מרווח למעלה/למטה */
+  max-width: 780px;
+  height: min(90vh, 860px);
   background: var(--bg-chat);
   border-radius: 32px;
   box-shadow:
     0 40px 90px rgba(0, 0, 0, 0.18),
-    0 12px 30px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255,255,255,0.7);
+    0 12px 30px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-/* ===== Header ===== */
+/* =================================================
+   HEADER
+   ================================================= */
 .chat-header {
   background: var(--header-gradient);
   color: #ffffff;
-  padding: 16px 24px;
   text-align: center;
   font-size: 18px;
   font-weight: 600;
+  padding: 16px 24px;
+  padding-top: calc(16px + env(safe-area-inset-top));
 }
 
-/* ===== Messages ===== */
+/* =================================================
+   MESSAGES AREA (THE ONLY SCROLLABLE AREA)
+   ================================================= */
 .messages {
   flex: 1;
-    overscroll-behavior: none;
-
   padding: 32px 40px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 24px;
   scroll-behavior: smooth;
+  overscroll-behavior: contain; /* ⛔ no bounce */
 }
 
-/* ===== Message ===== */
+/* =================================================
+   MESSAGE BUBBLES
+   ================================================= */
 .message {
   max-width: 70%;
   padding: 16px 20px;
   border-radius: var(--radius-xl);
   font-size: 15.5px;
   line-height: 1.65;
-  position: relative;
   box-shadow: 0 8px 24px rgba(0,0,0,0.09);
 }
 
-/* Bot – שמאל */
+/* Bot */
 .message.bot {
   align-self: flex-end;
   background: var(--bot-bg);
   border-top-right-radius: var(--radius-sm);
 }
 
-/* User – ימין */
+/* User */
 .message.user {
   align-self: flex-start;
   background: var(--user-bg);
   border-top-left-radius: var(--radius-sm);
 }
 
-/* ===== Input ===== */
+/* Typing indicator */
+.message.typing {
+  background: #ffffff;
+  padding: 10px 14px;
+  border-radius: 18px;
+  display: flex;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.message.typing span {
+  width: 6px;
+  height: 6px;
+  background: #9aa3af;
+  border-radius: 50%;
+  animation: typingDots 1.4s infinite ease-in-out both;
+}
+
+.message.typing span:nth-child(1) { animation-delay: 0s; }
+.message.typing span:nth-child(2) { animation-delay: 0.2s; }
+.message.typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingDots {
+  0% { opacity: 0.2; transform: translateY(0); }
+  20% { opacity: 1; transform: translateY(-2px); }
+  40% { opacity: 0.2; transform: translateY(0); }
+  100% { opacity: 0.2; }
+}
+
+/* =================================================
+   INPUT AREA (FIXED VISUALLY, NOT POSITION FIXED)
+   ================================================= */
 .input-box {
-  padding: 20px 30px 30px;
+  padding: 20px 30px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
 }
 
 .input-inner {
@@ -150,68 +192,32 @@ body {
   cursor: pointer;
 }
 
-
-.message.typing {
-  background: #ffffff;
-  width: fit-content;
-  padding: 10px 14px;
-  border-radius: 18px;
-  display: flex;
-  gap: 6px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  margin: 6px 0;
-}
-
-.message.typing span {
-  width: 6px;
-  height: 6px;
-  background: #9aa3af;
-  border-radius: 50%;
-  animation: typingDots 1.4s infinite ease-in-out both;
-}
-
-.message.typing span:nth-child(1) {
-  animation-delay: 0s;
-}
-.message.typing span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.message.typing span:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes typingDots {
-  0% { opacity: 0.2; transform: translateY(0); }
-  20% { opacity: 1; transform: translateY(-2px); }
-  40% { opacity: 0.2; transform: translateY(0); }
-  100% { opacity: 0.2; }
-}
-
-/* ===== Mobile ===== */
+/* =================================================
+   MOBILE MODE (FULL SCREEN APP FEEL)
+   ================================================= */
 @media (max-width: 768px) {
-    body {
+  body {
     overscroll-behavior: none;
   }
+
   .app-shell {
     padding: 0;
+    align-items: flex-start;
   }
-  .chat-container {
-        margin-top: 0;
 
-height: calc(var(--vh, 1vh) * 100);
+  .chat-container {
+    height: calc(var(--vh, 1vh) * 100);
     max-width: 100%;
     border-radius: 0;
     box-shadow: none;
   }
+
   .messages {
     padding: 24px 20px;
     gap: 20px;
   }
+
   .message {
     max-width: 85%;
   }
-
-  .app-shell {
-  align-items: flex-start;
-}
 }
