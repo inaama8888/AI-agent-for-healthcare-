@@ -1,6 +1,3 @@
-/* =================================================
-   index.css – Global Styles (Bullet-Proof)
-   ================================================= */
 
 html,
 body,
@@ -11,27 +8,27 @@ body,
 }
 
 html {
-  direction: rtl; /* RTL גלובלי */
+  direction: rtl; 
 }
 
 body {
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
-  background: #eef2f6; /* bg-app */
+  background: #eef2f6; 
   color: #1f2937;
 
-  /* ❌ לא מיישרים כאן */
+ 
   display: block;
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* root חייב למלא גובה */
+
 #root {
   height: 100%;
 }
 
-/* האפליקציה עצמה אחראית על layout */
+
 #root > * {
   height: 100%;
 }

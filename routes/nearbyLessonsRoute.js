@@ -52,18 +52,18 @@ router.post("/nearby", async (req, res) => {
   }
 
   try {
-    // 1. מיקום העיר שהמשתמש הקליד
+   
     const cityLocation = await getCityLocation(city);
     if (!cityLocation) {
       return res.json({ status: "CITY_NOT_FOUND" });
     }
 
-    // 2. שליפת שיעורים מה־DB
+   
     const [lessons] = await db.query(
       "SELECT lesson_id, topic AS title, city, lat, lng FROM lessons"
     );
 
-    // 3. חישוב מרחק (רק לפרונטלי)
+    
     const nearby = lessons
       .filter(l => l.lat !== null && l.lng !== null)
       .map(l => ({

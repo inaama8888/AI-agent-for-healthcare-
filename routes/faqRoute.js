@@ -11,7 +11,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// ===== טקסט קבוע: עמותה + מנחים =====
 const contextText = fs.readFileSync(
   path.join(__dirname, "faq_context.txt"),
   "utf8"
@@ -25,37 +24,28 @@ router.post("/", async (req, res) => {
 
     const { type, question, lesson } = req.body;
 
-    console.log("🧩 Parsed:");
-    console.log("➡️ type:", type);
-    console.log("➡️ question:", question);
-    console.log("➡️ lesson:", lesson);
+   
 
     if (!type || !question) {
       console.log("❌ Missing type or question");
       return res.json({ answer: "חסרים נתונים בשאלה." });
     }
 
-    // =========================
-    // שאלות על שיעורים
-    // =========================
     if (type === "LESSONS") {
       console.log("📘 ENTERED LESSONS FLOW");
 
       let lessons = [];
 
       if (lesson?.lesson_id) {
-        console.log("🎯 Query specific lesson:", lesson.lesson_id);
 
         const result = await db.query(
           "SELECT * FROM lessons WHERE lesson_id = ?",
           [lesson.lesson_id]
         );
 
-        console.log("🗄 DB RESULT (specific):", result);
 
         lessons = result[0];
       } else {
-        console.log("📚 Query ALL lessons");
 
         const result = await db.query("SELECT * FROM lessons");
 
@@ -85,7 +75,7 @@ const lessonsText = lessons.map(l => `
 console.log("🧠 LESSONS TEXT SENT TO AI:\n", lessonsText);
 
 
-      console.log("🧠 Prompt built");
+    
 const completion = await openai.chat.completions.create({
   model: "gpt-4o-mini",
   messages: [
@@ -108,16 +98,13 @@ const completion = await openai.chat.completions.create({
   temperature: 0
 });
 
-      console.log("🤖 OpenAI RESPONSE:", completion.choices[0].message.content);
 
       return res.json({
         answer: completion.choices[0].message.content,
       });
     }
 
-    // =========================
-    // עמותה / מנחים
-    // =========================
+  
     if (type === "ORG" || type === "INSTRUCTORS") {
       console.log("🌱 ENTERED ORG / INSTRUCTORS FLOW");
 
@@ -143,7 +130,6 @@ const completion = await openai.chat.completions.create({
   temperature: 0
 });
 
-      console.log("🤖 OpenAI RESPONSE:", completion.choices[0].message.content);
 
       return res.json({
         answer: completion.choices[0].message.content,

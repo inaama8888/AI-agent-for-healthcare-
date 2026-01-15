@@ -16,7 +16,6 @@ const normalizeChoice = (raw) => {
 };
 
 
-  /* ========= FAQ STATE ========= */
   const [faqMode, setFaqMode] = useState("choose");
   const [faqType, setFaqType] = useState(null);
   const [userPhone, setUserPhone] = useState("");
@@ -37,7 +36,6 @@ const endRef = useRef(null);
 
   const [faqSelectedLesson, setFaqSelectedLesson] = useState(null);
 
-  /* ========= HELPERS ========= */
 const sendBot = (text, type = "normal", isHtml = false) =>
   setMainMessages((prev) => [
     ...prev,
@@ -72,7 +70,6 @@ const isValidIsraeliPhone = (phone) => {
   return israelPhoneRegex.test(cleaned);
 };
 
-      // ===== Google Calendar Link =====
   const createGoogleCalendarLink = (lesson) => {
     const start = new Date(lesson.date);
     const end = new Date(start.getTime() + 60 * 60 * 1000); // שעה
@@ -91,18 +88,15 @@ const isValidIsraeliPhone = (phone) => {
     return `https://calendar.google.com/calendar/render?${params.toString()}`;
   };
 
-  /* ========= INIT ========= */
   useEffect(() => {
     if (mainMessages.length === 0) {
 sendBot("שלום, טוב שבאת. כדי שנוכל להתחיל, אשמח למספר הטלפון שלך.");
 setStep("ask_phone");
     }
-    // eslint-disable-next-line
   }, []);
 
 
   
-  /* ========= MENUS ========= */
   const showMainMenu = () => {
 sendBot("איך תרצה להמשיך מכאן? 🌱");
     sendBot(
@@ -123,7 +117,6 @@ sendBot("איך תרצה להמשיך מכאן? 🌱");
     setStep("search_menu");
   };
 
-  /* ========= LOGIN ========= */
 const handlePhone = async () => {
   const phone = mainInput.trim();
   if (!phone) return sendBot("נא להזין מספר טלפון");
@@ -191,7 +184,6 @@ const handleAskReason = async () => {
     sendBot("שגיאה בשמירת הבקשה");
   }
 };
-  /* ========= LESSON SEARCH ========= */
   const loadAllLessons = async () => {
     try {
       const res = await axios.get("/api/lessons");
@@ -334,7 +326,6 @@ sendBot("0 - תפריט ראשי\n9 - חזרה אחורה");
     }
   };
 
-  /* ========= REGISTER (שלב 1) ========= */
  const handleRegister = async (raw) => {
   const index = Number(raw.trim()) - 1;
 
@@ -406,7 +397,6 @@ setStep("after_register");
 const handleFAQ = async () => {
   const text = mainInput.trim();
 
-  // ===== שלב בחירת נושא =====
   if (faqMode === "choose") {
     if (!/^\d+$/.test(text)) {
       sendBot("כאן צריך לבחור מספר 🌿");
@@ -467,7 +457,6 @@ const handleFAQ = async () => {
     return;
   }
 
-  // ===== שלב שאלה חופשית (ChatGPT) =====
   if (faqMode === "ask") {
     try {
       setIsTyping(true);
@@ -489,7 +478,6 @@ const handleFAQ = async () => {
 };
 
 
-  /* ========= EMOTIONAL ========= */
 const handleEmotionalSupport = async () => {
   const feeling = mainInput.trim();
   if (!feeling) return sendBot("מה אתה מרגיש?");
@@ -515,7 +503,6 @@ const handleEmotionalSupport = async () => {
 };
 
 
-  /* ========= ROUTER ========= */
  const handlers = {
   // ✅ זיהוי חדש לפי טלפון
   ask_phone: handlePhone,

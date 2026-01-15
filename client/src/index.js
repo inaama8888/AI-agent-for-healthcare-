@@ -6,5 +6,5 @@ import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);
 
-// 🔥 חובה בשביל PWA
+
 serviceWorkerRegistration.register();

@@ -5,8 +5,7 @@ const axios = require("axios");
 require("dotenv").config();
 const cors = require("cors");
 
-const db = require("./db"); // חיבור DB פעם אחת
-const crypto = require("crypto");
+const db = require("./db"); 
 
 const app = express();
 
@@ -15,15 +14,9 @@ const { sendApprovalEmail } = require("./routes/mailer");
 
 app.use(express.json());
 app.use(cors());
-//app.use(express.static("Public"));
 
-/* ================================
-   HEALTH CHECK (חשוב ל-Railway)
-================================ */
 
-/* ================================
-   בדיקת משתמש קיים
-================================ */
+
 app.post("/api/check-user", async (req, res) => {
   const { phone } = req.body;
 
@@ -32,7 +25,6 @@ app.post("/api/check-user", async (req, res) => {
   }
 
   try {
-    // 1️⃣ בדיקה אם משתמש מאושר קיים
     const [users] = await db.query(
       "SELECT full_name FROM users WHERE phone = ? LIMIT 1",
       [phone]
@@ -45,7 +37,7 @@ app.post("/api/check-user", async (req, res) => {
       });
     }
 
-    // 2️⃣ בדיקה אם קיימת בקשה בהמתנה
+ 
     const [pending] = await db.query(
       "SELECT request_id FROM pending_users WHERE phone = ? LIMIT 1",
       [phone]
@@ -57,7 +49,7 @@ app.post("/api/check-user", async (req, res) => {
       });
     }
 
-    // 3️⃣ משתמש חדש
+    
     return res.json({
       status: "NEW",
     });
@@ -93,9 +85,7 @@ app.post("/api/create-user", async (req, res) => {
 });
 
 
-/* ================================
-   יצירת בקשת הרשמה (pending)
-================================ */
+
 app.post("/api/pending-users", async (req, res) => {
   const { full_name, phone, reason } = req.body;
   const approvalToken = crypto.randomBytes(32).toString("hex");
@@ -107,16 +97,14 @@ app.post("/api/pending-users", async (req, res) => {
 
   try {
     
-    // 1️⃣ שמירה בטבלת pending_users
     await db.query(
       "INSERT INTO pending_users (full_name, phone, reason, approval_token) VALUES (?, ?, ?, ?)",
       [full_name, phone, reason || null, approvalToken]
     );
 
-    // 2️⃣ שליחת מייל למנהלת
     await sendApprovalEmail({ full_name, phone, reason ,approvalToken});
 
-    // 3️⃣ תשובה ל־frontend / בוט
+  
     res.json({ status: "PENDING_CREATED" });
   } catch (err) {
     console.error("❌ pending-users error:", err);
@@ -131,10 +119,7 @@ app.post("/api/pending-users", async (req, res) => {
 
 
 
-  ///vranv
-  /* ================================
-   הרשמה לשיעור  ✅ (שלב 1)
-================================ */
+
 app.post("/api/register", async (req, res) => {
   const { phone, lesson_id } = req.body;
 
@@ -172,9 +157,7 @@ app.post("/api/register", async (req, res) => {
 });
 
 
-/* ================================
-   שליפת שיעורים
-================================ */
+
 app.get("/api/lessons", async (req, res) => {
   const { city, topic, instructor, level } = req.query;
 
@@ -188,25 +171,21 @@ app.get("/api/lessons", async (req, res) => {
     `;
     const params = [];
 
-    // עיר – התאמה מלאה
     if (city) {
       query += " AND city = ?";
       params.push(city);
     }
 
-    // נושא – התאמה חלקית
     if (topic) {
       query += " AND topic LIKE ?";
       params.push(`%${topic}%`);
     }
 
-    // מנחה – התאמה חלקית
     if (instructor) {
       query += " AND instructor LIKE ?";
       params.push(`%${instructor}%`);
     }
 
-    // רמה – התאמה חלקית
     if (level) {
       query += " AND level LIKE ?";
       params.push(`%${level}%`);
@@ -224,9 +203,7 @@ app.get("/api/lessons", async (req, res) => {
 
 
 
-/* ================================
-   ROUTES נוספים
-================================ */
+
 app.use("/api/faq", require("./routes/faqRoute"));
 app.use("/api/lessons", require("./routes/nearbyLessonsRoute"));
 app.use("/api/emotional-support", require("./routes/emotionalSupportRoute"));
@@ -311,9 +288,6 @@ app.get("*", (req, res) => {
 
 
 
-/* ================================
-   START SERVER
-================================ */
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
