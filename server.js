@@ -219,7 +219,6 @@ app.get("/api/approve", async (req, res) => {
   }
 
   try {
-    // 1️⃣ שליפת בקשה ממתינה
     const [rows] = await db.query(
       "SELECT full_name, phone FROM pending_users WHERE approval_token = ? AND status = 'pending' LIMIT 1",
       [token]
@@ -231,13 +230,11 @@ app.get("/api/approve", async (req, res) => {
 
     const { full_name, phone } = rows[0];
 
-    // 2️⃣ הכנסת המשתמש לטבלת users
     await db.query(
       "INSERT INTO users (full_name, phone) VALUES (?, ?)",
       [full_name, phone]
     );
 
-    // 3️⃣ עדכון הבקשה ל־approved
     await db.query(
       "UPDATE pending_users SET status = 'approved', approval_token = NULL WHERE phone = ?",
       [phone]
