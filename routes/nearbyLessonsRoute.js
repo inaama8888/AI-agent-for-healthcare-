@@ -59,9 +59,20 @@ router.post("/nearby", async (req, res) => {
     }
 
    
-    const [lessons] = await db.query(
-      "SELECT lesson_id, topic AS title, city, lat, lng FROM lessons"
-    );
+    const [lessons] = await db.query(`
+  SELECT 
+    lesson_id,
+    topic AS title,
+    instructor,
+    level,
+    date,
+    seats,
+    city,
+    lat,
+    lng
+  FROM lessons
+`);
+
 
     
     const nearby = lessons

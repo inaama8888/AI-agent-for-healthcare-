@@ -237,7 +237,7 @@ sendBot("0️⃣ תפריט ראשי\n9️⃣  חזרה אחורה");
 
 const searchNearby = async (city) => {
   try {
-    const res = await axios.post("/api/lessons/nearby", { city });
+const res = await axios.post(`${API_BASE}/api/lessons/nearby`, { city });
 
 if (res.data.status === "CITY_NOT_FOUND") {
   sendBot(`לא הצלחתי לזהות את "${city}" כעיר בישראל 🌿`);
